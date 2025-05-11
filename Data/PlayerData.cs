@@ -33,6 +33,7 @@ public class PlayerData {
   public HashSet<TeleportRequestData> PendingRequests { get; set; } = [];
   public DateTime LastTeleportTime { get; set; } = DateTime.Now.AddHours(-1);
   public bool LoadedTeleports { get; set; } = false;
+  public bool IsAdmin => UserEntity.Read<User>().IsAdmin;
 
   public PlayerData(PlayerDataOptions options) {
     Name = options.CharacterName;
@@ -68,9 +69,5 @@ public class PlayerData {
 
   public void ClearTeleports() {
     Teleports.Clear();
-  }
-
-  public bool IsAdmin() {
-    return UserEntity.Read<User>().IsAdmin;
   }
 }

@@ -22,12 +22,12 @@ internal static class UserCommands {
 
     var zone = TeleportService.GetRestrictedZone(player.CharacterEntity.Position());
 
-    if (!player.IsAdmin() && zone != null && !zone.CanTeleportTo && !player.BypassRestrictedZones) {
+    if (!player.IsAdmin && zone != null && !zone.CanTeleportTo && !player.BypassRestrictedZones) {
       ctx.Reply($"You cannot set a teleport while in a restricted zone.".FormatError());
       return;
     }
 
-    if (!player.IsAdmin() && player.Teleports.Count >= player.MaxTeleports) {
+    if (!player.IsAdmin && player.Teleports.Count >= player.MaxTeleports) {
       ctx.Reply($"You have reached the maximum number of teleports ({player.MaxTeleports}). Please remove one before adding a new one.".White());
       return;
     }
@@ -53,19 +53,19 @@ internal static class UserCommands {
   public static void Teleport(ChatCommandContext ctx, string teleportName) {
     if (!TryGetPlayerById(ctx, out var player)) return;
 
-    if (!player.IsAdmin() && !Settings.Get<bool>("EnableTeleportInCombat") && !player.BypassCombat && TeleportService.IsPlayerInCombat(player.CharacterEntity)) {
+    if (!player.IsAdmin && !Settings.Get<bool>("EnableTeleportInCombat") && !player.BypassCombat && TeleportService.IsPlayerInCombat(player.CharacterEntity)) {
       ctx.Reply($"You cannot teleport while in combat.".FormatError());
       return;
     }
 
-    if (!player.IsAdmin() && !Settings.Get<bool>("EnableDraculaRoom") && !player.BypassDraculaRoom && TeleportService.IsInDraculaRoom(player.CharacterEntity)) {
+    if (!player.IsAdmin && !Settings.Get<bool>("EnableDraculaRoom") && !player.BypassDraculaRoom && TeleportService.IsInDraculaRoom(player.CharacterEntity)) {
       ctx.Reply($"You cannot teleport while in the ~Dracula~'s room.".FormatError());
       return;
     }
 
     var fromZone = TeleportService.GetRestrictedZone(player.CharacterEntity.Position());
 
-    if (!player.IsAdmin() && fromZone != null && !fromZone.CanTeleportFrom && !player.BypassRestrictedZones) {
+    if (!player.IsAdmin && fromZone != null && !fromZone.CanTeleportFrom && !player.BypassRestrictedZones) {
       ctx.Reply($"You cannot teleport while in a restricted zone.".FormatError());
       return;
     }
@@ -74,7 +74,7 @@ internal static class UserCommands {
       var personalTeleport = player.GetTeleport(teleportName);
       var personalToZone = TeleportService.GetRestrictedZone(personalTeleport.Position);
 
-      if (!player.IsAdmin() && personalToZone != null && !personalToZone.CanTeleportTo && !player.BypassRestrictedZones) {
+      if (!player.IsAdmin && personalToZone != null && !personalToZone.CanTeleportTo && !player.BypassRestrictedZones) {
         ctx.Reply($"You cannot teleport to a restricted zone.".FormatError());
         return;
       }
@@ -86,7 +86,7 @@ internal static class UserCommands {
     if (TeleportService.GlobalTeleports.TryGetValue(teleportName, out var globalTeleport)) {
       var globalToZone = TeleportService.GetRestrictedZone(globalTeleport.Position);
 
-      if (globalToZone != null && !player.IsAdmin() && !globalToZone.CanTeleportTo && !player.BypassRestrictedZones) {
+      if (globalToZone != null && !player.IsAdmin && !globalToZone.CanTeleportTo && !player.BypassRestrictedZones) {
         ctx.Reply($"You cannot teleport to a restricted zone.".FormatError());
         return;
       }
@@ -102,12 +102,12 @@ internal static class UserCommands {
     int cooldown = teleport.Cooldown;
     var timeLeft = player.LastTeleportTime.AddSeconds(cooldown) - DateTime.Now;
 
-    if (!player.IsAdmin() && !player.BypassCooldown && timeLeft > TimeSpan.Zero) {
+    if (!player.IsAdmin && !player.BypassCooldown && timeLeft > TimeSpan.Zero) {
       ctx.Reply($"You must wait ~{timeLeft.Minutes}~ minutes and ~{timeLeft.Seconds}~ seconds before teleporting again.".FormatError());
       return true;
     }
 
-    if (!player.IsAdmin() && !InventoryService.HasAmount(player.CharacterEntity, teleport.PrefabGUID, teleport.Cost)) {
+    if (!player.IsAdmin && !InventoryService.HasAmount(player.CharacterEntity, teleport.PrefabGUID, teleport.Cost)) {
       ctx.Reply($"You do not have enough ~{teleport.PrefabName}~ to teleport to ~{name}~.".FormatError());
       return true;
     }
@@ -184,7 +184,7 @@ internal static class UserCommands {
     var prefabGUID = new PrefabGUID(Settings.Get<int>("DefaultGlobalPrefabGUID"));
     var cost = Settings.Get<int>("DefaultGlobalCost");
 
-    if (!player.IsAdmin() && !InventoryService.HasAmount(player.CharacterEntity, prefabGUID, cost)) {
+    if (!player.IsAdmin && !InventoryService.HasAmount(player.CharacterEntity, prefabGUID, cost)) {
       ctx.Reply($"You do not have enough ~{prefabName}~ to teleport to ~{playerName}~.".FormatError());
       return;
     }
@@ -218,27 +218,27 @@ internal static class UserCommands {
     var cost = Settings.Get<int>("DefaultGlobalCost");
 
     // Check if the target player has enough items
-    if (!playerTarget.IsAdmin() && !InventoryService.HasAmount(player.CharacterEntity, prefabGUID, cost)) {
+    if (!playerTarget.IsAdmin && !InventoryService.HasAmount(player.CharacterEntity, prefabGUID, cost)) {
       SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"You do not have enough ~{Settings.Get<string>("DefaultGlobalPrefabName")}~ to teleport to ~{playerName}~.".FormatError());
       return;
     }
 
     // Check if the player is in combat
-    if (!playerTarget.IsAdmin() && !Settings.Get<bool>("EnableTeleportInCombat") && !playerTarget.BypassCombat && TeleportService.IsPlayerInCombat(playerTarget.CharacterEntity)) {
+    if (!playerTarget.IsAdmin && !Settings.Get<bool>("EnableTeleportInCombat") && !playerTarget.BypassCombat && TeleportService.IsPlayerInCombat(playerTarget.CharacterEntity)) {
       ctx.Reply($"Player ~{player.Name}~ is currently in combat and cannot teleport.".FormatError());
       SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"Your teleport request to ~{player.Name}~ was denied because you're in combat.".FormatError());
       return;
     }
 
     // Check if the target player is in Dracula's room
-    if (!playerTarget.IsAdmin() && !Settings.Get<bool>("EnableDraculaRoom") && !playerTarget.BypassDraculaRoom && TeleportService.IsInDraculaRoom(playerTarget.CharacterEntity)) {
+    if (!playerTarget.IsAdmin && !Settings.Get<bool>("EnableDraculaRoom") && !playerTarget.BypassDraculaRoom && TeleportService.IsInDraculaRoom(playerTarget.CharacterEntity)) {
       ctx.Reply($"Player ~{playerTarget.Name}~ is in Dracula's room and cannot teleport.".FormatError());
       SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"Your teleport request to ~{player.Name}~ was denied because you're in Dracula's room.".FormatError());
       return;
     }
 
     // check if the player is in Dracula's room
-    if (!playerTarget.IsAdmin() && !Settings.Get<bool>("EnableDraculaRoom") && !playerTarget.BypassDraculaRoom && TeleportService.IsInDraculaRoom(player.CharacterEntity)) {
+    if (!playerTarget.IsAdmin && !Settings.Get<bool>("EnableDraculaRoom") && !playerTarget.BypassDraculaRoom && TeleportService.IsInDraculaRoom(player.CharacterEntity)) {
       ctx.Reply($"Teleport failed: you are in Dracula's room, which blocks incoming teleports.".FormatError());
       SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"Your teleport request to ~{player.Name}~ was denied because they are in Dracula's room.".FormatError());
       return;
@@ -247,7 +247,7 @@ internal static class UserCommands {
     var zone = TeleportService.GetRestrictedZone(player.CharacterEntity.Position());
 
     // Check if the player is in a restricted zone
-    if (!playerTarget.IsAdmin() && !playerTarget.BypassRestrictedZones && zone != null && !zone.CanTeleportTo) {
+    if (!playerTarget.IsAdmin && !playerTarget.BypassRestrictedZones && zone != null && !zone.CanTeleportTo) {
       ctx.Reply($"Teleport failed: you are in a restricted zone, which blocks incoming teleports.".FormatError());
       SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"Your teleport request to ~{player.Name}~ was denied because they are in a restricted zone.".FormatError());
       return;

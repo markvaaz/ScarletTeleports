@@ -8,8 +8,9 @@ using System.Linq;
 namespace ScarletTeleports.Services;
 
 public class PlayerService {
-  public readonly Dictionary<string, PlayerData> PlayerNames = new();
-  public readonly Dictionary<ulong, PlayerData> PlayerIds = new();
+  public readonly Dictionary<string, PlayerData> PlayerNames = [];
+  public readonly Dictionary<ulong, PlayerData> PlayerIds = [];
+  public readonly List<PlayerData> AllPlayers = [];
 
   public PlayerService() {
     ClearCache();
@@ -36,13 +37,14 @@ public class PlayerService {
     var userData = userEntity.Read<User>();
     var name = userData.CharacterName.ToString();
 
-    if (!PlayerNames.ContainsKey(name.ToLower()) && !PlayerIds.ContainsKey(userData.PlatformId)) {
+    if (!PlayerIds.ContainsKey(userData.PlatformId)) {
       var newData = new PlayerData(new());
       PlayerNames[name.ToLower()] = newData;
       PlayerIds[userData.PlatformId] = newData;
+      AllPlayers.Add(newData);
     }
 
-    var playerData = PlayerNames[name.ToLower()];
+    var playerData = PlayerIds[userData.PlatformId];
 
     playerData.Name = name;
     playerData.PlatformID = userData.PlatformId;
@@ -54,7 +56,7 @@ public class PlayerService {
   }
 
   public List<PlayerData> GetAdmins() {
-    return [.. GetAllPlayers().Where(p => p.IsAdmin())];
+    return [.. AllPlayers.Where(p => p.IsAdmin)];
   }
 
   public bool TryGetById(ulong platformId, out PlayerData playerData) {
@@ -65,7 +67,7 @@ public class PlayerService {
     return PlayerNames.TryGetValue(name.ToLower(), out playerData);
   }
 
-  public List<PlayerData> GetAllPlayers() => PlayerIds.Values.ToList();
+  public List<PlayerData> GetAllPlayers() => AllPlayers;
 }
 
 
