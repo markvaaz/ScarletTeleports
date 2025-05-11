@@ -17,7 +17,7 @@ namespace ScarletTeleports.Commands;
 internal static class UserCommands {
   [Command("setteleport", usage: "<teleport-name>", shortHand: "stp")]
   public static void SetTeleport(ChatCommandContext ctx, string teleportName) {
-    if (!Settings.EnablePersonalTeleports.Value) return;
+    if (!Settings.Get<bool>("EnablePersonalTeleports")) return;
     if (!TryGetPlayerById(ctx, out var player)) return;
 
     var zone = TeleportService.GetRestrictedZone(player.CharacterEntity.Position());
@@ -53,12 +53,12 @@ internal static class UserCommands {
   public static void Teleport(ChatCommandContext ctx, string teleportName) {
     if (!TryGetPlayerById(ctx, out var player)) return;
 
-    if (!player.IsAdmin() && !Settings.EnableTeleportInCombat.Value && !player.BypassCombat && TeleportService.IsPlayerInCombat(player.CharacterEntity)) {
+    if (!player.IsAdmin() && !Settings.Get<bool>("EnableTeleportInCombat") && !player.BypassCombat && TeleportService.IsPlayerInCombat(player.CharacterEntity)) {
       ctx.Reply($"You cannot teleport while in combat.".FormatError());
       return;
     }
 
-    if (!player.IsAdmin() && !Settings.EnableDraculaRoom.Value && !player.BypassDraculaRoom && TeleportService.IsInDraculaRoom(player.CharacterEntity)) {
+    if (!player.IsAdmin() && !Settings.Get<bool>("EnableDraculaRoom") && !player.BypassDraculaRoom && TeleportService.IsInDraculaRoom(player.CharacterEntity)) {
       ctx.Reply($"You cannot teleport while in the ~Dracula~'s room.".FormatError());
       return;
     }
@@ -168,7 +168,7 @@ internal static class UserCommands {
 
   [Command("teleportrequest", usage: "<player-name>", shortHand: "tpr")]
   public static void TeleportRequest(ChatCommandContext ctx, string playerName) {
-    if (!Settings.EnableTeleportBetweenPlayers.Value) {
+    if (!Settings.Get<bool>("EnableTeleportBetweenPlayers")) {
       ctx.Reply($"Teleport between players are disabled.".FormatError());
       return;
     }
@@ -180,9 +180,9 @@ internal static class UserCommands {
       return;
     }
 
-    var prefabName = Settings.DefaultGlobalPrefabName.Value;
-    var prefabGUID = new PrefabGUID(Settings.DefaultGlobalPrefabGUID.Value);
-    var cost = Settings.DefaultGlobalCost.Value;
+    var prefabName = Settings.Get<string>("DefaultGlobalPrefabName");
+    var prefabGUID = new PrefabGUID(Settings.Get<int>("DefaultGlobalPrefabGUID"));
+    var cost = Settings.Get<int>("DefaultGlobalCost");
 
     if (!player.IsAdmin() && !InventoryService.HasAmount(player.CharacterEntity, prefabGUID, cost)) {
       ctx.Reply($"You do not have enough ~{prefabName}~ to teleport to ~{playerName}~.".FormatError());
@@ -195,7 +195,7 @@ internal static class UserCommands {
 
     var user = playerTarget.UserEntity.Read<User>();
 
-    SystemMessages.Send(user, $"~{player.Name}~ has requested to teleport to you, you have ~{Settings.TeleportRequestExpiration.Value}~ seconds to respond.".Format());
+    SystemMessages.Send(user, $"~{player.Name}~ has requested to teleport to you, you have ~{Settings.Get<int>("TeleportRequestExpiration")}~ seconds to respond.".Format());
     SystemMessages.Send(user, $"Use ~.st tpa {player.Name}~ to ~accept~ the request.".Format([null, "green"]));
     SystemMessages.Send(user, $"Use ~.st tpd {player.Name}~ to ~deny~ the request.".Format([null, "#ff4d4d"]));
 
@@ -213,32 +213,32 @@ internal static class UserCommands {
       return;
     }
 
-    var prefabName = Settings.DefaultGlobalPrefabName.Value;
-    var prefabGUID = new PrefabGUID(Settings.DefaultGlobalPrefabGUID.Value);
-    var cost = Settings.DefaultGlobalCost.Value;
+    var prefabName = Settings.Get<string>("DefaultGlobalPrefabName");
+    var prefabGUID = new PrefabGUID(Settings.Get<int>("DefaultGlobalPrefabGUID"));
+    var cost = Settings.Get<int>("DefaultGlobalCost");
 
     // Check if the target player has enough items
     if (!playerTarget.IsAdmin() && !InventoryService.HasAmount(player.CharacterEntity, prefabGUID, cost)) {
-      SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"You do not have enough ~{Settings.DefaultGlobalPrefabName.Value}~ to teleport to ~{playerName}~.".FormatError());
+      SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"You do not have enough ~{Settings.Get<string>("DefaultGlobalPrefabName")}~ to teleport to ~{playerName}~.".FormatError());
       return;
     }
 
     // Check if the player is in combat
-    if (!playerTarget.IsAdmin() && !Settings.EnableTeleportInCombat.Value && !playerTarget.BypassCombat && TeleportService.IsPlayerInCombat(playerTarget.CharacterEntity)) {
+    if (!playerTarget.IsAdmin() && !Settings.Get<bool>("EnableTeleportInCombat") && !playerTarget.BypassCombat && TeleportService.IsPlayerInCombat(playerTarget.CharacterEntity)) {
       ctx.Reply($"Player ~{player.Name}~ is currently in combat and cannot teleport.".FormatError());
       SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"Your teleport request to ~{player.Name}~ was denied because you're in combat.".FormatError());
       return;
     }
 
     // Check if the target player is in Dracula's room
-    if (!playerTarget.IsAdmin() && !Settings.EnableDraculaRoom.Value && !playerTarget.BypassDraculaRoom && TeleportService.IsInDraculaRoom(playerTarget.CharacterEntity)) {
+    if (!playerTarget.IsAdmin() && !Settings.Get<bool>("EnableDraculaRoom") && !playerTarget.BypassDraculaRoom && TeleportService.IsInDraculaRoom(playerTarget.CharacterEntity)) {
       ctx.Reply($"Player ~{playerTarget.Name}~ is in Dracula's room and cannot teleport.".FormatError());
       SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"Your teleport request to ~{player.Name}~ was denied because you're in Dracula's room.".FormatError());
       return;
     }
 
     // check if the player is in Dracula's room
-    if (!playerTarget.IsAdmin() && !Settings.EnableDraculaRoom.Value && !playerTarget.BypassDraculaRoom && TeleportService.IsInDraculaRoom(player.CharacterEntity)) {
+    if (!playerTarget.IsAdmin() && !Settings.Get<bool>("EnableDraculaRoom") && !playerTarget.BypassDraculaRoom && TeleportService.IsInDraculaRoom(player.CharacterEntity)) {
       ctx.Reply($"Teleport failed: you are in Dracula's room, which blocks incoming teleports.".FormatError());
       SystemMessages.Send(playerTarget.UserEntity.Read<User>(), $"Your teleport request to ~{player.Name}~ was denied because they are in Dracula's room.".FormatError());
       return;

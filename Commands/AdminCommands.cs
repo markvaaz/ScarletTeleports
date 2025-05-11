@@ -256,16 +256,16 @@ internal static class AdminCommands {
     if (teleportType == "global") {
       switch (defaultType) {
         case "prefabname":
-          Settings.DefaultGlobalPrefabName.Value = defaultValue;
+          Settings.Set("DefaultGlobalPrefabName", defaultValue);
           break;
         case "prefabguid":
-          Settings.DefaultGlobalPrefabGUID.Value = int.Parse(defaultValue);
+          Settings.Set("DefaultGlobalPrefabGUID", int.Parse(defaultValue));
           break;
         case "cost":
-          Settings.DefaultGlobalCost.Value = int.Parse(defaultValue);
+          Settings.Set("DefaultGlobalCost", int.Parse(defaultValue));
           break;
         case "cooldown":
-          Settings.DefaultGlobalCooldown.Value = int.Parse(defaultValue);
+          Settings.Set("DefaultGlobalCooldown", int.Parse(defaultValue));
           break;
       }
     }
@@ -273,16 +273,16 @@ internal static class AdminCommands {
     if (teleportType == "personal") {
       switch (defaultType) {
         case "prefabname":
-          Settings.DefaultPersonalPrefabName.Value = defaultValue;
+          Settings.Set("DefaultPersonalPrefabName", defaultValue);
           break;
         case "prefabguid":
-          Settings.DefaultPersonalPrefabGUID.Value = int.Parse(defaultValue);
+          Settings.Set("DefaultPersonalPrefabGUID", int.Parse(defaultValue));
           break;
         case "cost":
-          Settings.DefaultPersonalCost.Value = int.Parse(defaultValue);
+          Settings.Set("DefaultPersonalCost", int.Parse(defaultValue));
           break;
         case "cooldown":
-          Settings.DefaultPersonalCooldown.Value = int.Parse(defaultValue);
+          Settings.Set("DefaultPersonalCooldown", int.Parse(defaultValue));
           break;
       }
     }
@@ -535,10 +535,10 @@ internal static class AdminCommands {
     var teleportDataOptions = new PersonalTeleportDataOptions {
       Name = teleportName,
       Position = [x, y, z],
-      PrefabName = prefabName ?? Settings.DefaultPersonalPrefabName.Value,
-      PrefabGUID = prefabGUID ?? Settings.DefaultPersonalPrefabGUID.Value,
-      Cost = cost ?? Settings.DefaultPersonalCost.Value,
-      Cooldown = cooldown ?? Settings.DefaultPersonalCooldown.Value
+      PrefabName = prefabName ?? Settings.Get<string>("DefaultPersonalPrefabName"),
+      PrefabGUID = prefabGUID ?? Settings.Get<int>("DefaultPersonalPrefabGUID"),
+      Cost = cost ?? Settings.Get<int>("DefaultPersonalCost"),
+      Cooldown = cooldown ?? Settings.Get<int>("DefaultPersonalCooldown")
     };
 
     TeleportService.CreatePersonalTeleport(player, teleportDataOptions);
@@ -559,10 +559,10 @@ internal static class AdminCommands {
     GlobalTeleportDataOptions teleportDataOptions = new() {
       Name = teleportName,
       Position = [x, y, z],
-      PrefabName = prefabName ?? Settings.DefaultGlobalPrefabName.Value,
-      PrefabGUID = prefabGUID ?? Settings.DefaultGlobalPrefabGUID.Value,
-      Cost = cost ?? Settings.DefaultGlobalCost.Value,
-      Cooldown = cooldown ?? Settings.DefaultGlobalCooldown.Value
+      PrefabName = prefabName ?? Settings.Get<string>("DefaultGlobalPrefabName"),
+      PrefabGUID = prefabGUID ?? Settings.Get<int>("DefaultGlobalPrefabGUID"),
+      Cost = cost ?? Settings.Get<int>("DefaultGlobalCost"),
+      Cooldown = cooldown ?? Settings.Get<int>("DefaultGlobalCooldown")
     };
 
     TeleportService.CreateGlobalTeleport(teleportDataOptions);

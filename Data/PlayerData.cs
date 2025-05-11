@@ -22,7 +22,7 @@ public class PlayerData {
   public Entity CharacterEntity { get; set; }
   public ulong PlatformID { get; set; }
   public bool IsOnline { get; set; }
-  public int MaxTeleports { get; set; } = Settings.DefaulMaximumPersonalTeleports.Value;
+  public int MaxTeleports { get; set; } = Settings.Get<int>("DefaultMaximumPersonalTeleports");
   public bool CanResquestTeleports { get; set; } = true;
   public bool BypassCost { get; set; } = false;
   public bool BypassCooldown { get; set; } = false;

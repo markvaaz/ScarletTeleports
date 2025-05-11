@@ -19,19 +19,19 @@ public class TeleportDataOptions {
 
 public class GlobalTeleportDataOptions : TeleportDataOptions {
   public GlobalTeleportDataOptions() {
-    PrefabGUID = Settings.DefaultGlobalPrefabGUID.Value;
-    PrefabName = Settings.DefaultGlobalPrefabName.Value;
-    Cost = Settings.DefaultGlobalCost.Value;
-    Cooldown = Settings.DefaultGlobalCooldown.Value;
+    PrefabGUID = Settings.Get<int>("DefaultGlobalPrefabGUID");
+    PrefabName = Settings.Get<string>("DefaultGlobalPrefabName");
+    Cost = Settings.Get<int>("DefaultGlobalCost");
+    Cooldown = Settings.Get<int>("DefaultGlobalCooldown");
   }
 }
 
 public class PersonalTeleportDataOptions : TeleportDataOptions {
   public PersonalTeleportDataOptions() {
-    PrefabGUID = Settings.DefaultPersonalPrefabGUID.Value;
-    PrefabName = Settings.DefaultPersonalPrefabName.Value;
-    Cost = Settings.DefaultPersonalCost.Value;
-    Cooldown = Settings.DefaultPersonalCooldown.Value;
+    PrefabGUID = Settings.Get<int>("DefaultPersonalPrefabGUID");
+    PrefabName = Settings.Get<string>("DefaultPersonalPrefabName");
+    Cost = Settings.Get<int>("DefaultPersonalCost");
+    Cooldown = Settings.Get<int>("DefaultPersonalCooldown");
   }
 }
 
@@ -65,7 +65,7 @@ public class TeleportData {
 
 public class TeleportRequestData {
   public ulong PlatformID { get; set; }
-  public DateTime ExpirationTime { get; set; } = DateTime.Now.AddSeconds(Settings.TeleportRequestExpiration.Value);
+  public DateTime ExpirationTime { get; set; } = DateTime.Now.AddSeconds(Settings.Get<int>("TeleportRequestExpiration"));
 
   public TeleportRequestData(ulong platformID) {
     PlatformID = platformID;

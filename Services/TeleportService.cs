@@ -131,15 +131,15 @@ public class TeleportService {
 
     foreach (var teleport in teleports) {
       if (teleport.IsDefaultCost) {
-        teleport.Cost = Settings.DefaultGlobalCost.Value;
+        teleport.Cost = Settings.Get<int>("DefaultGlobalCost");
       }
 
       if (teleport.IsDefaultPrefab) {
-        teleport.PrefabGUID = Settings.DefaultGlobalPrefabGUID.Value;
+        teleport.PrefabGUID = Settings.Get<int>("DefaultGlobalPrefabGUID");
       }
 
       if (teleport.IsDefaultCooldown) {
-        teleport.Cooldown = Settings.DefaultGlobalCooldown.Value;
+        teleport.Cooldown = Settings.Get<int>("DefaultGlobalCooldown");
       }
 
       AddGlobalTeleport(new TeleportData(teleport));
@@ -179,15 +179,15 @@ public class TeleportService {
 
     foreach (var teleportOptions in teleports) {
       if (teleportOptions.IsDefaultCost) {
-        teleportOptions.Cost = Settings.DefaultPersonalCost.Value;
+        teleportOptions.Cost = Settings.Get<int>("DefaultPersonalCost");
       }
 
       if (teleportOptions.IsDefaultPrefab) {
-        teleportOptions.PrefabGUID = Settings.DefaultPersonalPrefabGUID.Value;
+        teleportOptions.PrefabGUID = Settings.Get<int>("DefaultPersonalPrefabGUID");
       }
 
       if (teleportOptions.IsDefaultCooldown) {
-        teleportOptions.Cooldown = Settings.DefaultPersonalCooldown.Value;
+        teleportOptions.Cooldown = Settings.Get<int>("DefaultPersonalCooldown");
       }
 
       var teleportData = new TeleportData(teleportOptions, player.PlatformID, player.Name);
