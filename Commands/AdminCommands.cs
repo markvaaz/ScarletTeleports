@@ -229,7 +229,7 @@ internal static class AdminCommands {
     ctx.Reply($"Total: ~{teleports.Count}~ teleports.".Format());
   }
 
-  [Command("bypass", usage: "<player-name> <cost|cooldown|dracularoom|combat> <true|false>", adminOnly: true)]
+  [Command("bypass", usage: "<player-name> <cost|cooldown|dracularoom|combat|restricted> <true|false>", adminOnly: true)]
   public static void SetBypassOption(ChatCommandContext ctx, string playerName, string option, bool value) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
 
@@ -245,6 +245,9 @@ internal static class AdminCommands {
         break;
       case "combat":
         player.BypassCombat = value;
+        break;
+      case "restricted":
+        player.BypassRestrictedZones = value;
         break;
       default:
         ctx.Reply($"~Invalid option.~ Use: cost, cooldown, dracularoom, or combat.".FormatError());
