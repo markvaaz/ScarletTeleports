@@ -13,8 +13,8 @@ using Stunlock.Core;
 // TODO: REFACTOR THIS MESS
 
 namespace ScarletTeleports.Commands;
-[CommandGroup("st")]
-internal static class UserCommands {
+[CommandGroup("stp")]
+public static class UserCommands {
   [Command("setteleport", usage: "<teleport-name>", shortHand: "stp")]
   public static void SetTeleport(ChatCommandContext ctx, string teleportName) {
     if (!Settings.Get<bool>("EnablePersonalTeleports")) return;

@@ -8,8 +8,8 @@ using Unity.Mathematics;
 using ScarletTeleports.Utils;
 
 namespace ScarletTeleports.Commands;
-[CommandGroup("st")]
-internal static class AdminCommands {
+[CommandGroup("stp")]
+public static class AdminCommands {
   [Command("goto", usage: "<x> <y> <z>", adminOnly: true)]
   public static void GotoTeleport(ChatCommandContext ctx, int x, int y, int z) {
     if (!TryGetPlayerById(ctx, out var player)) return;

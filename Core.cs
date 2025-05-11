@@ -8,7 +8,7 @@ using ScarletTeleports.Services;
 
 namespace ScarletTeleports;
 
-internal static class Core {
+public static class Core {
   public static World Server { get; } = GetServerWorld() ?? throw new Exception("There is no Server world (yet)...");
   public static PrefabCollectionSystem PrefabCollectionSystem => Server.GetExistingSystemManaged<PrefabCollectionSystem>();
   public static EntityManager EntityManager => Server.EntityManager;
