@@ -6,7 +6,7 @@ ScarletTeleports adds a complete teleport system to V Rising servers. Players an
 
 Update 0.1.37
 
-- Fixed compatibility issue with **KindredComamnds**
+- Fixed compatibility issue with **KindredCommands** due to command prefix conflict (st). Scarlet Teleports now uses **`stp`** as its new prefix.
 - Added to the command bypass the **restricted** option to allow teleportation in restricted zones
 
 ---
