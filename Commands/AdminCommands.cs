@@ -22,7 +22,7 @@ internal static class AdminCommands {
   public static void GotoTeleport(ChatCommandContext ctx, string playerName) {
     if (!TryGetPlayerById(ctx, out var player)) return;
     if (!TryGetPlayerByName(ctx, playerName, out var playerTarget)) return;
-    TeleportService.TeleportToPosition(player, playerTarget.CharacterEntity.Position());
+    TeleportService.TeleportToPosition(player, playerTarget.CharacterEntity.GetPosition());
 
     ctx.Reply($"Teleported you to ~{playerName}~.".Format());
   }
@@ -30,11 +30,11 @@ internal static class AdminCommands {
   [Command("summon all", adminOnly: true)]
   public static void SummonAllPlayers(ChatCommandContext ctx) {
     if (!TryGetPlayerById(ctx, out var player)) return;
-    var players = Core.Players.GetAllPlayers();
+    var players = Core.Players.AllPlayers;
 
     foreach (var playerTarget in players) {
       if (!playerTarget.IsOnline) continue;
-      TeleportService.TeleportToPosition(playerTarget, player.CharacterEntity.Position());
+      TeleportService.TeleportToPosition(playerTarget, player.CharacterEntity.GetPosition());
     }
 
     ctx.Reply($"Teleported ~All~ players to you.".Format());
@@ -44,7 +44,7 @@ internal static class AdminCommands {
   public static void SummonPlayer(ChatCommandContext ctx, string playerName) {
     if (!TryGetPlayerById(ctx, out var player)) return;
     if (!TryGetPlayerByName(ctx, playerName, out var playerTarget)) return;
-    TeleportService.TeleportToPosition(playerTarget, player.CharacterEntity.Position());
+    TeleportService.TeleportToPosition(playerTarget, player.CharacterEntity.GetPosition());
 
     ctx.Reply($"Teleported ~{playerName}~ to you.".Format());
   }
@@ -58,19 +58,27 @@ internal static class AdminCommands {
 
   [Command("add global", usage: "<teleport-name>", adminOnly: true)]
   public static void AddTeleport(ChatCommandContext ctx, string teleportName) {
-    float3 position = ctx.Event.SenderCharacterEntity.Position();
+    float3 position = ctx.Event.SenderCharacterEntity.GetPosition();
     CreateGlobalTeleport(ctx, teleportName, position.x, position.y, position.z);
   }
 
   [Command("make global", usage: "<teleport-name> <prefab-name> <prefab-guid> <cost> <cooldown> <x> <y> <z>", adminOnly: true)]
   public static void MakeTeleportGlobal(ChatCommandContext ctx, string teleportName, string perfabName, int prefabGUID, int cost, int cooldown, int x, int y, int z) {
-    CreateGlobalTeleport(ctx, teleportName, x, y, z, perfabName, prefabGUID, cost, cooldown);
+    if (!PrefabGUID.TryParse(prefabGUID.ToString(), out var parsedPrefab)) {
+      ctx.Reply($"Prefab {prefabGUID} is invalid.".FormatError());
+      return;
+    }
+    CreateGlobalTeleport(ctx, teleportName, x, y, z, perfabName, parsedPrefab, cost, cooldown);
   }
 
   [Command("make global", usage: "<teleport-name> <prefab-name> <prefab-guid> <cost> <cooldown>", adminOnly: true)]
   public static void MakeTeleportGlobal(ChatCommandContext ctx, string teleportName, string perfabName, int prefabGUID, int cost, int cooldown) {
-    float3 position = ctx.Event.SenderCharacterEntity.Position();
-    CreateGlobalTeleport(ctx, teleportName, position.x, position.y, position.z, perfabName, prefabGUID, cost, cooldown);
+    if (!PrefabGUID.TryParse(prefabGUID.ToString(), out var parsedPrefab)) {
+      ctx.Reply($"Prefab {prefabGUID} is invalid.".FormatError());
+      return;
+    }
+    float3 position = ctx.Event.SenderCharacterEntity.GetPosition();
+    CreateGlobalTeleport(ctx, teleportName, position.x, position.y, position.z, perfabName, parsedPrefab, cost, cooldown);
   }
 
   [Command("remove global", usage: "<teleport-name>", adminOnly: true)]
@@ -93,21 +101,33 @@ internal static class AdminCommands {
   [Command("add personal", usage: "<player-name> <teleport-name>", adminOnly: true)]
   public static void AddTeleport(ChatCommandContext ctx, string playerName, string teleportName) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
-    float3 position = ctx.Event.SenderCharacterEntity.Position();
+    float3 position = ctx.Event.SenderCharacterEntity.GetPosition();
     CreatePersonalTeleport(ctx, player, playerName, teleportName, position.x, position.y, position.z);
   }
 
   [Command("make personal", usage: "<player-name> <teleport-name> <prefab-name> <prefab-guid> <cost> <cooldown> <x> <y> <z>", adminOnly: true)]
   public static void MakeTeleport(ChatCommandContext ctx, string playerName, string teleportName, string prefabName, int prefabGUID, int cost, int cooldown, int x, int y, int z) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
-    CreatePersonalTeleport(ctx, player, playerName, teleportName, x, y, z, prefabName, prefabGUID, cost, cooldown);
+
+    if (!PrefabGUID.TryParse(prefabGUID.ToString(), out var parsedPrefab)) {
+      ctx.Reply($"Prefab {prefabGUID} is invalid.".FormatError());
+      return;
+    }
+
+    CreatePersonalTeleport(ctx, player, playerName, teleportName, x, y, z, prefabName, parsedPrefab, cost, cooldown);
   }
 
   [Command("make personal", usage: "<player-name> <teleport-name> <prefab-name> <prefab-guid> <cost> <cooldown>", adminOnly: true)]
   public static void MakeTeleport(ChatCommandContext ctx, string playerName, string teleportName, string perfabName, int prefabGUID, int cost, int cooldown) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
-    float3 position = ctx.Event.SenderCharacterEntity.Position();
-    CreatePersonalTeleport(ctx, player, playerName, teleportName, position.x, position.y, position.z, perfabName, prefabGUID, cost, cooldown);
+    float3 position = ctx.Event.SenderCharacterEntity.GetPosition();
+
+    if (!PrefabGUID.TryParse(prefabGUID.ToString(), out var parsedPrefab)) {
+      ctx.Reply($"Prefab {prefabGUID} is invalid.".FormatError());
+      return;
+    }
+
+    CreatePersonalTeleport(ctx, player, playerName, teleportName, position.x, position.y, position.z, perfabName, parsedPrefab, cost, cooldown);
   }
 
   [Command("remove personal", usage: "<player-name> <teleport-name>", adminOnly: true)]
@@ -131,7 +151,7 @@ internal static class AdminCommands {
   [Command("add restricted", usage: "<name> <radius>", adminOnly: true)]
   public static void AddRestrictedZone(ChatCommandContext ctx, string name, float radius) {
     if (!TryGetPlayerById(ctx, out var player)) return;
-    var position = player.CharacterEntity.Position();
+    var position = player.CharacterEntity.GetPosition();
     CreateRestrictedZone(ctx, name, radius, position.x, position.y, position.z);
   }
 
@@ -143,7 +163,7 @@ internal static class AdminCommands {
   [Command("make restricted", usage: "<name> <radius> <can-teleport-to> <can-teleport-from>", adminOnly: true)]
   public static void MakeRestrictedZone(ChatCommandContext ctx, string name, float radius, bool canTeleportTo, bool canTeleportFrom) {
     if (!TryGetPlayerById(ctx, out var player)) return;
-    var position = player.CharacterEntity.Position();
+    var position = player.CharacterEntity.GetPosition();
     CreateRestrictedZone(ctx, name, radius, position.x, position.y, position.z, canTeleportTo, canTeleportFrom);
   }
 
@@ -387,7 +407,7 @@ internal static class AdminCommands {
     }
 
     if (!PrefabGUID.TryParse(prefabGUID, out var parsedPrefab)) {
-      ctx.Reply($"Prefab ~{prefabGUID}~ not found.".FormatError());
+      ctx.Reply($"Prefab {prefabGUID} is invalid.".FormatError());
       return;
     }
 
@@ -463,7 +483,7 @@ internal static class AdminCommands {
   public static void WhereAmI(ChatCommandContext ctx) {
     if (!TryGetPlayerById(ctx, out var player)) return;
 
-    var position = player.CharacterEntity.Position();
+    var position = player.CharacterEntity.GetPosition();
 
     ctx.Reply($"You are at (~{position.x}~, ~{position.y}~, ~{position.z}~).".Format());
   }
@@ -477,7 +497,7 @@ internal static class AdminCommands {
 
   [Command("iwanttoclearallplayerteleports", adminOnly: true)]
   public static void ClearAllPlayerTeleports(ChatCommandContext ctx) {
-    Core.Players.GetAllPlayers().ForEach(p => p.Teleports.Clear());
+    Core.Players.AllPlayers.ForEach(p => p.Teleports.Clear());
     TeleportService.PersonalTeleports.Clear();
     TeleportService.SaveAllPersonalTeleports();
     ctx.Reply($"All global teleports cleared.".Format());
@@ -521,7 +541,8 @@ internal static class AdminCommands {
     ctx.Reply($"Restricted area ~{name}~ added successfully.".Format());
   }
 
-  private static void CreatePersonalTeleport(ChatCommandContext ctx, PlayerData player, string name, string teleportName, float x, float y, float z, string prefabName = null, int? prefabGUID = null, int? cost = null, int? cooldown = null) {
+
+  private static void CreatePersonalTeleport(ChatCommandContext ctx, PlayerData player, string name, string teleportName, float x, float y, float z, string prefabName = null, PrefabGUID prefabGUID = default, int? cost = null, int? cooldown = null) {
     if (player.HasTeleport(teleportName)) {
       ctx.Reply($"Teleport ~{teleportName}~ already exists.".FormatError());
       return;
@@ -532,20 +553,20 @@ internal static class AdminCommands {
       return;
     }
 
-    var teleportDataOptions = new PersonalTeleportDataOptions {
+    TeleportData teleportData = new() {
       Name = teleportName,
-      Position = [x, y, z],
+      Position = new float3(x, y, z),
       PrefabName = prefabName ?? Settings.Get<string>("DefaultPersonalPrefabName"),
-      PrefabGUID = prefabGUID ?? Settings.Get<int>("DefaultPersonalPrefabGUID"),
+      PrefabGUID = prefabGUID == default ? new(Settings.Get<int>("DefaultPersonalPrefabGUID")) : prefabGUID,
       Cost = cost ?? Settings.Get<int>("DefaultPersonalCost"),
       Cooldown = cooldown ?? Settings.Get<int>("DefaultPersonalCooldown")
     };
 
-    TeleportService.CreatePersonalTeleport(player, teleportDataOptions);
+    TeleportService.CreatePersonalTeleport(player, teleportData);
     ctx.Reply($"Teleport ~{teleportName}~ added successfully for ~{name}~.".Format());
   }
 
-  public static void CreateGlobalTeleport(ChatCommandContext ctx, string teleportName, float x, float y, float z, string prefabName = null, int? prefabGUID = null, int? cost = null, int? cooldown = null) {
+  public static void CreateGlobalTeleport(ChatCommandContext ctx, string teleportName, float x, float y, float z, string prefabName = null, PrefabGUID prefabGUID = default, int? cost = null, int? cooldown = null) {
     if (TeleportService.HasGlobalTeleport(teleportName)) {
       ctx.Reply($"Teleport ~{teleportName}~ already exists.".FormatError());
       return;
@@ -556,16 +577,16 @@ internal static class AdminCommands {
       return;
     }
 
-    GlobalTeleportDataOptions teleportDataOptions = new() {
+    TeleportData teleportData = new() {
       Name = teleportName,
-      Position = [x, y, z],
+      Position = new float3(x, y, z),
       PrefabName = prefabName ?? Settings.Get<string>("DefaultGlobalPrefabName"),
-      PrefabGUID = prefabGUID ?? Settings.Get<int>("DefaultGlobalPrefabGUID"),
+      PrefabGUID = prefabGUID == default ? new(Settings.Get<int>("DefaultGlobalPrefabGUID")) : prefabGUID,
       Cost = cost ?? Settings.Get<int>("DefaultGlobalCost"),
       Cooldown = cooldown ?? Settings.Get<int>("DefaultGlobalCooldown")
     };
 
-    TeleportService.CreateGlobalTeleport(teleportDataOptions);
+    TeleportService.CreateGlobalTeleport(teleportData);
     ctx.Reply($"Global Teleport ~{teleportName}~ added successfully.".Format());
   }
 }

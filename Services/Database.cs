@@ -7,7 +7,6 @@ namespace ScarletTeleports.Services;
 
 public static class Database {
   private static readonly string CONFIG_PATH = Path.Combine(BepInEx.Paths.ConfigPath, "ScarletTeleports");
-  private static Dictionary<string, object> Data = new();
 
   public static void Initialize() {
     if (!Directory.Exists(CONFIG_PATH)) {
@@ -21,22 +20,10 @@ public static class Database {
     try {
       Directory.CreateDirectory(Path.GetDirectoryName(filePath));
 
-      if (Data.ContainsKey(path)) {
-        Data[path] = data;
-      }
-
       string jsonData = JsonSerializer.Serialize(data, new JsonSerializerOptions { WriteIndented = true });
       File.WriteAllText(filePath, jsonData);
     } catch (Exception ex) {
       Core.Log.LogError($"An error occurred while saving data: {ex.Message}");
-    }
-  }
-
-  public static T Get<T>(string path) {
-    if (Data.ContainsKey(path)) {
-      return (T)Data[path];
-    } else {
-      return Load<T>(path); ;
     }
   }
 
@@ -50,22 +37,13 @@ public static class Database {
     try {
       string jsonData = File.ReadAllText(filePath);
       var deserializedData = JsonSerializer.Deserialize<T>(jsonData);
-      Data[path] = deserializedData;
 
-      return (T)Data[path];
+      return deserializedData;
     } catch (Exception ex) {
       Core.Log.LogError($"An error occurred while loading data: {ex.Message}");
     }
 
     return default;
-  }
-
-  public static object GetData(string path) {
-    if (Data.ContainsKey(path)) {
-      return Data[path];
-    } else {
-      return null;
-    }
   }
 
   public static List<string> ListAvailablePaths() {

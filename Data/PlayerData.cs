@@ -3,26 +3,23 @@ using System.Collections.Generic;
 using ProjectM.Network;
 using System.Linq;
 using System;
+using System.Text.Json.Serialization;
 
 namespace ScarletTeleports.Data;
 
-public class PlayerDataOptions {
-  public string CharacterName { get; set; } = default;
-  public ulong PlatformID { get; set; } = 0;
-  public bool IsOnline { get; set; } = false;
-  public bool IsAdmin { get; set; } = false;
-  public Entity UserEntity { get; set; } = default;
-  public Entity CharacterEntity { get; set; } = default;
-  public User User { get; set; }
-}
-
 public class PlayerData {
-  public string Name { get; set; }
-  public Entity UserEntity { get; set; }
-  public Entity CharacterEntity { get; set; }
-  public ulong PlatformID { get; set; }
-  public bool IsOnline { get; set; }
+  [JsonIgnore]
+  public string Name { get; set; } = default;
+  [JsonIgnore]
+  public Entity UserEntity { get; set; } = default;
+  [JsonIgnore]
+  public Entity CharacterEntity { get; set; } = default;
+  [JsonIgnore]
+  public ulong PlatformID { get; set; } = 0;
+  [JsonIgnore]
+  public bool IsOnline { get; set; } = false;
   public int MaxTeleports { get; set; } = Settings.Get<int>("DefaultMaximumPersonalTeleports");
+  [JsonIgnore]
   public bool CanResquestTeleports { get; set; } = true;
   public bool BypassCost { get; set; } = false;
   public bool BypassCooldown { get; set; } = false;
@@ -30,18 +27,14 @@ public class PlayerData {
   public bool BypassCombat { get; set; } = false;
   public bool BypassRestrictedZones { get; set; } = false;
   public HashSet<TeleportData> Teleports { get; set; } = [];
+  [JsonIgnore]
   public HashSet<TeleportRequestData> PendingRequests { get; set; } = [];
+  [JsonIgnore]
   public DateTime LastTeleportTime { get; set; } = DateTime.Now.AddHours(-1);
+  [JsonIgnore]
   public bool LoadedTeleports { get; set; } = false;
+  [JsonIgnore]
   public bool IsAdmin => UserEntity.Read<User>().IsAdmin;
-
-  public PlayerData(PlayerDataOptions options) {
-    Name = options.CharacterName;
-    PlatformID = options.PlatformID;
-    IsOnline = options.IsOnline;
-    UserEntity = options.UserEntity;
-    CharacterEntity = options.CharacterEntity;
-  }
 
   public void AddTeleport(TeleportData teleport) {
     if (teleport == null) return;

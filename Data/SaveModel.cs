@@ -10,5 +10,5 @@ internal class SaveModel {
   public bool BypassCombat { get; set; } = false;
   public bool BypassRestrictedZones { get; set; } = false;
 
-  public HashSet<TeleportDataOptions> Teleports { get; set; } = [];
+  public HashSet<TeleportData> Teleports { get; set; } = [];
 }

@@ -3,12 +3,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>ScarletTeleports</AssemblyName>
     <Description>Teleportation mod</Description>
-    <Version>0.1.35</Version>
+    <Version>0.1.36</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RootNamespace>ScarletTeleports</RootNamespace>
-    <AssemblyVersion>0.1.35.0</AssemblyVersion>
-    <FileVersion>0.1.35.0</FileVersion>
+    <AssemblyVersion>0.1.36.0</AssemblyVersion>
+    <FileVersion>0.1.36.0</FileVersion>
     <InformationalVersion>0.1.35+1.Branch.main.Sha.c33d0879382e1a0da34861ec55914ba7e637a80e</InformationalVersion>
   </PropertyGroup>
   <ItemGroup>

@@ -20,7 +20,7 @@ internal static class UserCommands {
     if (!Settings.Get<bool>("EnablePersonalTeleports")) return;
     if (!TryGetPlayerById(ctx, out var player)) return;
 
-    var zone = TeleportService.GetRestrictedZone(player.CharacterEntity.Position());
+    var zone = TeleportService.GetRestrictedZone(player.CharacterEntity.GetPosition());
 
     if (!player.IsAdmin && zone != null && !zone.CanTeleportTo && !player.BypassRestrictedZones) {
       ctx.Reply($"You cannot set a teleport while in a restricted zone.".FormatError());
@@ -37,11 +37,15 @@ internal static class UserCommands {
       return;
     }
 
-    var position = player.CharacterEntity.Position();
+    var position = player.CharacterEntity.GetPosition();
 
-    PersonalTeleportDataOptions teleport = new() {
+    TeleportData teleport = new() {
       Name = teleportName,
-      Position = [position.x, position.y, position.z]
+      Position = position,
+      PrefabGUID = new(Settings.Get<int>("DefaultPersonalPrefabGUID")),
+      PrefabName = Settings.Get<string>("DefaultPersonalPrefabName"),
+      Cost = Settings.Get<int>("DefaultPersonalCost"),
+      Cooldown = Settings.Get<int>("DefaultPersonalCooldown")
     };
 
     TeleportService.CreatePersonalTeleport(player, teleport);
@@ -63,7 +67,7 @@ internal static class UserCommands {
       return;
     }
 
-    var fromZone = TeleportService.GetRestrictedZone(player.CharacterEntity.Position());
+    var fromZone = TeleportService.GetRestrictedZone(player.CharacterEntity.GetPosition());
 
     if (!player.IsAdmin && fromZone != null && !fromZone.CanTeleportFrom && !player.BypassRestrictedZones) {
       ctx.Reply($"You cannot teleport while in a restricted zone.".FormatError());
@@ -244,7 +248,7 @@ internal static class UserCommands {
       return;
     }
 
-    var zone = TeleportService.GetRestrictedZone(player.CharacterEntity.Position());
+    var zone = TeleportService.GetRestrictedZone(player.CharacterEntity.GetPosition());
 
     // Check if the player is in a restricted zone
     if (!playerTarget.IsAdmin && !playerTarget.BypassRestrictedZones && zone != null && !zone.CanTeleportTo) {
@@ -253,7 +257,7 @@ internal static class UserCommands {
       return;
     }
 
-    var position = player.CharacterEntity.Position();
+    var position = player.CharacterEntity.GetPosition();
 
     TeleportService.TeleportToPosition(playerTarget, position);
 

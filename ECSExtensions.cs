@@ -63,7 +63,7 @@ public static class ECSExtensions {
     EntityManager.RemoveComponent(entity, componentType);
   }
 
-  public static float3 Position(this Entity entity) {
+  public static float3 GetPosition(this Entity entity) {
     if (!EntityManager.HasComponent<Translation>(entity)) return float3.zero;
 
     return EntityManager.GetComponentData<Translation>(entity).Value;

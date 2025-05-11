@@ -38,7 +38,7 @@ public class PlayerService {
     var name = userData.CharacterName.ToString();
 
     if (!PlayerIds.ContainsKey(userData.PlatformId)) {
-      var newData = new PlayerData(new());
+      PlayerData newData = new();
       PlayerNames[name.ToLower()] = newData;
       PlayerIds[userData.PlatformId] = newData;
       AllPlayers.Add(newData);
@@ -66,8 +66,6 @@ public class PlayerService {
   public bool TryGetByName(string name, out PlayerData playerData) {
     return PlayerNames.TryGetValue(name.ToLower(), out playerData);
   }
-
-  public List<PlayerData> GetAllPlayers() => AllPlayers;
 }
 
 

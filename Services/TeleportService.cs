@@ -17,7 +17,6 @@ public class TeleportService {
   public static Dictionary<string, ZoneData> RestrictedZones { get; private set; } = [];
   private static EntityManager entityManager => Core.EntityManager;
   public static void Initialize() {
-    LoadAllPersonalTeleports();
     LoadGlobalTeleports();
     LoadRestrictedZones();
     CoroutineHandler.StartRepeatingCoroutine(CheckForExpiredRequests, 20);
@@ -44,7 +43,7 @@ public class TeleportService {
   }
 
   public static bool IsInDraculaRoom(Entity player) {
-    var position = player.Position();
+    var position = player.GetPosition();
     var draculaRoom = new float3(720, 15, -2827);
     var distance = math.distance(position, draculaRoom);
 
@@ -70,22 +69,18 @@ public class TeleportService {
     return true;
   }
 
-  public static void CreateGlobalTeleport(TeleportDataOptions teleportOptions) {
-    if (HasGlobalTeleport(teleportOptions.Name)) {
-      Core.Log.LogWarning($"Teleport {teleportOptions.Name} already exists.");
+  public static void CreateGlobalTeleport(TeleportData teleportData) {
+    if (HasGlobalTeleport(teleportData.Name)) {
+      Core.Log.LogWarning($"Teleport {teleportData.Name} already exists.");
       return;
     }
-
-    var teleportData = new TeleportData(teleportOptions);
 
     AddGlobalTeleport(teleportData);
 
     SaveGlobalTeleports();
   }
 
-  public static void CreatePersonalTeleport(PlayerData player, TeleportDataOptions teleportOptions) {
-    var teleportData = new TeleportData(teleportOptions, player.PlatformID, player.Name);
-
+  public static void CreatePersonalTeleport(PlayerData player, TeleportData teleportData) {
     player.AddTeleport(teleportData);
 
     AddPersonalTeleport(teleportData);
@@ -94,26 +89,17 @@ public class TeleportService {
   }
 
   public static void SaveGlobalTeleports() {
-    Database.Save("GlobalTeleports", GetParsedTeleports(GlobalTeleports.Values.ToHashSet()));
+    Database.Save("GlobalTeleports", GlobalTeleports.Values.ToList());
   }
 
   public static void SaveAllPersonalTeleports() {
-    foreach (var player in Core.Players.GetAllPlayers()) {
+    foreach (var player in Core.Players.AllPlayers) {
       SavePersonalTeleport(player);
     }
   }
 
   public static void SavePersonalTeleport(PlayerData player) {
-    SaveModel saveModel = new() {
-      MaxTeleports = player.MaxTeleports,
-      BypassCost = player.BypassCost,
-      BypassCooldown = player.BypassCooldown,
-      BypassDraculaRoom = player.BypassDraculaRoom,
-      BypassCombat = player.BypassCombat,
-      Teleports = GetParsedTeleports(player.Teleports)
-    };
-
-    Database.Save($"PersonalTeleports/{player.PlatformID}", saveModel);
+    Database.Save($"PersonalTeleports/{player.PlatformID}", player);
   }
 
   public static TeleportData GetGlobalTeleport(string name) {
@@ -125,7 +111,7 @@ public class TeleportService {
   }
 
   public static void LoadGlobalTeleports() {
-    var teleports = Database.Get<List<GlobalTeleportDataOptions>>("GlobalTeleports");
+    var teleports = Database.Load<List<TeleportData>>("GlobalTeleports");
 
     if (teleports == null) return;
 
@@ -135,33 +121,22 @@ public class TeleportService {
       }
 
       if (teleport.IsDefaultPrefab) {
-        teleport.PrefabGUID = Settings.Get<int>("DefaultGlobalPrefabGUID");
+        teleport.PrefabGUID = new(Settings.Get<int>("DefaultGlobalPrefabGUID"));
       }
 
       if (teleport.IsDefaultCooldown) {
         teleport.Cooldown = Settings.Get<int>("DefaultGlobalCooldown");
       }
 
-      AddGlobalTeleport(new TeleportData(teleport));
+      AddGlobalTeleport(teleport);
     }
 
     SaveGlobalTeleports();
   }
 
-  public static void LoadAllPersonalTeleports() {
-    var players = Core.Players.GetAllPlayers();
-
-    if (players.Count == 0) return;
-
-    foreach (var p in players) {
-      if (!LoadPersonalTeleports(p)) continue;
-    }
-  }
-
   public static bool LoadPersonalTeleports(PlayerData player) {
-    player.ClearTeleports();
-
-    var data = Database.Get<SaveModel>($"PersonalTeleports/{player.PlatformID}");
+    player.Teleports.Clear();
+    var data = Database.Load<PlayerData>($"PersonalTeleports/{player.PlatformID}");
 
     if (data == null) return false;
 
@@ -175,22 +150,18 @@ public class TeleportService {
 
     if (teleports == null) return false;
 
-    player.Teleports.Clear();
-
-    foreach (var teleportOptions in teleports) {
-      if (teleportOptions.IsDefaultCost) {
-        teleportOptions.Cost = Settings.Get<int>("DefaultPersonalCost");
+    foreach (var teleportData in teleports) {
+      if (teleportData.IsDefaultCost) {
+        teleportData.Cost = Settings.Get<int>("DefaultPersonalCost");
       }
 
-      if (teleportOptions.IsDefaultPrefab) {
-        teleportOptions.PrefabGUID = Settings.Get<int>("DefaultPersonalPrefabGUID");
+      if (teleportData.IsDefaultPrefab) {
+        teleportData.PrefabGUID = new(Settings.Get<int>("DefaultPersonalPrefabGUID"));
       }
 
-      if (teleportOptions.IsDefaultCooldown) {
-        teleportOptions.Cooldown = Settings.Get<int>("DefaultPersonalCooldown");
+      if (teleportData.IsDefaultCooldown) {
+        teleportData.Cooldown = Settings.Get<int>("DefaultPersonalCooldown");
       }
-
-      var teleportData = new TeleportData(teleportOptions, player.PlatformID, player.Name);
 
       player.AddTeleport(teleportData);
 
@@ -226,26 +197,6 @@ public class TeleportService {
     }
   }
 
-  public static HashSet<TeleportDataOptions> GetParsedTeleports(HashSet<TeleportData> teleports) {
-    var teleportsResult = new HashSet<TeleportDataOptions>();
-
-    foreach (var teleport in teleports) {
-      teleportsResult.Add(new TeleportDataOptions {
-        Name = teleport.Name,
-        Position = [teleport.Position.x, teleport.Position.y, teleport.Position.z],
-        PrefabName = teleport.PrefabName,
-        PrefabGUID = teleport.PrefabGUID.GuidHash,
-        Cost = teleport.Cost,
-        Cooldown = teleport.Cooldown,
-        IsDefaultCost = teleport.IsDefaultCost,
-        IsDefaultPrefab = teleport.IsDefaultPrefab,
-        IsDefaultCooldown = teleport.IsDefaultCooldown
-      });
-    }
-
-    return teleportsResult;
-  }
-
   public static HashSet<TeleportData> GetAllTeleports() {
     var result = new HashSet<TeleportData>();
 
@@ -253,7 +204,7 @@ public class TeleportService {
   }
 
   public static void CheckForExpiredRequests() {
-    foreach (var player in Core.Players.GetAllPlayers()) {
+    foreach (var player in Core.Players.AllPlayers) {
       player.PendingRequests.RemoveWhere(request => {
         bool remove = request.ExpirationTime <= DateTime.Now;
 
@@ -273,7 +224,7 @@ public class TeleportService {
   }
 
   public static void LoadRestrictedZones() {
-    var data = Database.Get<Dictionary<string, ZoneData>>("RestrictedZones");
+    var data = Database.Load<Dictionary<string, ZoneData>>("RestrictedZones");
 
     if (data != null) {
       RestrictedZones.Clear();
