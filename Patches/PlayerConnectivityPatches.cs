@@ -58,18 +58,24 @@ public class Destroy_TravelBuffSystem_Patch {
 
 		var entities = __instance.EntityManager.CreateEntityQuery(ComponentType.ReadOnly<PrefabGUID>(), ComponentType.ReadOnly<EntityOwner>()).ToEntityArray(Allocator.Temp);
 
-		foreach (var entity in entities) {
-			PrefabGUID GUID = entity.Read<PrefabGUID>();
+		try {
+			foreach (var entity in entities) {
+				PrefabGUID GUID = entity.Read<PrefabGUID>();
 
-			if (GUID.Equals(netherCoffinGUID)) {
-				var owner = entity.Read<EntityOwner>().Owner;
+				if (GUID.Equals(netherCoffinGUID)) {
+					var owner = entity.Read<EntityOwner>().Owner;
 
-				if (!owner.Has<PlayerCharacter>()) return;
+					if (!owner.Has<PlayerCharacter>()) return;
 
-				var userEntity = owner.Read<PlayerCharacter>().UserEntity;
+					var userEntity = owner.Read<PlayerCharacter>().UserEntity;
 
-				Core.Players.SetPlayerCache(userEntity);
+					Core.Players.SetPlayerCache(userEntity);
+				}
 			}
+		} catch (Exception e) {
+			Core.Log.LogError($"An error occurred while destroying travel buff: {e.Message}");
+		} finally {
+			entities.Dispose();
 		}
 	}
 }

@@ -1,17 +1,26 @@
 # ScarletTeleports
 
-ScarletTeleports adds a complete teleport system to V Rising servers. Players and admins can create, manage, and use personal or global teleport points, request teleports to other players, easily list or remove teleports, and set custom costs, cooldowns, and permissions. The mod also allows defining restricted zones where teleportation is limited, configuring consumable items required for each teleport, and setting individual limits per player. All features are accessible through chat commands, with permission support and advanced options for server administration.
-
 ## Updates
 
-Update 0.1.38
+<details>
+<summary>Update 0.1.39</summary>
+- Improved performance and stability.
+</details>
 
+<details>
+<summary>Update 0.1.38</summary>
 - Fixed an issue where settings were not displaying correctly in the config file.
+</details>
 
-Update 0.1.37
-
+<details>
+<summary>Update 0.1.37</summary>
 - Fixed a compatibility issue with **KindredCommands** due to a command prefix conflict (`.st`). Scarlet Teleports now uses **`.stp`** as its new prefix.
 - Added the **restricted** option to the command bypass, allowing teleportation in restricted zones.
+</details>
+
+---
+
+ScarletTeleports adds a complete teleport system to V Rising servers. Players and admins can create, manage, and use personal or global teleport points, request teleports to other players, easily list or remove teleports, and set custom costs, cooldowns, and permissions. The mod also allows defining restricted zones where teleportation is limited, configuring consumable items required for each teleport, and setting individual limits per player. All features are accessible through chat commands, with permission support and advanced options for server administration.
 
 ---
 
@@ -175,6 +184,7 @@ For a full list of commands and usage, expand the **Show Commands**.
   - **Usage:** `.stp iwanttoclearallplayerteleports`
   - **Description:** Remove all personal teleports.
 
+
 ---
 
 ## User Commands
@@ -216,6 +226,16 @@ For a full list of commands and usage, expand the **Show Commands**.
   - **Description:** Deny a teleport request from another player.
 
 </details>
+
+### How to Simulate a Whitelist
+
+1. Set **`DefaultMaximumPersonalTeleports`** to **`0`** in the config file.
+
+   Now, nobody can create personal teleports.
+
+2. Use the command `.stp set maxteleports <player-name> <max-teleports>` to set the maximum number of personal teleports for a player.
+
+   Now, the player can create as many personal teleports as you set.
 
 ---
 

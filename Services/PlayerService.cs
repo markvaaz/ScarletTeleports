@@ -21,10 +21,17 @@ public class PlayerService {
 
     EntityQuery query = Core.EntityManager.CreateEntityQuery(ref queryBuilder);
 
-    var userEntities = query.ToEntityArray(Allocator.Temp);
+    try {
+      var userEntities = query.ToEntityArray(Allocator.Temp);
 
-    foreach (var entity in userEntities) {
-      SetPlayerCache(entity);
+      foreach (var entity in userEntities) {
+        SetPlayerCache(entity);
+      }
+    } catch (System.Exception e) {
+      Core.Log.LogError(e);
+    } finally {
+      query.Dispose();
+      queryBuilder.Dispose();
     }
   }
 
