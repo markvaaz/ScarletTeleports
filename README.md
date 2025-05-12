@@ -2,12 +2,16 @@
 
 ScarletTeleports adds a complete teleport system to V Rising servers. Players and admins can create, manage, and use personal or global teleport points, request teleports to other players, easily list or remove teleports, and set custom costs, cooldowns, and permissions. The mod also allows defining restricted zones where teleportation is limited, configuring consumable items required for each teleport, and setting individual limits per player. All features are accessible through chat commands, with permission support and advanced options for server administration.
 
-## Update
+## Updates
+
+Update 0.1.38
+
+- Fixed an issue where settings were not displaying correctly in the config file.
 
 Update 0.1.37
 
-- Fixed compatibility issue with **KindredCommands** due to command prefix conflict (st). Scarlet Teleports now uses **`stp`** as its new prefix.
-- Added to the command bypass the **restricted** option to allow teleportation in restricted zones
+- Fixed a compatibility issue with **KindredCommands** due to a command prefix conflict (`.st`). Scarlet Teleports now uses **`.stp`** as its new prefix.
+- Added the **restricted** option to the command bypass, allowing teleportation in restricted zones.
 
 ---
 

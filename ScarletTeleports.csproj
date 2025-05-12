@@ -3,13 +3,13 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>ScarletTeleports</AssemblyName>
     <Description>Teleportation mod</Description>
-    <Version>0.1.37</Version>
+    <Version>0.1.38</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RootNamespace>ScarletTeleports</RootNamespace>
-    <AssemblyVersion>0.1.37.0</AssemblyVersion>
-    <FileVersion>0.1.37.0</FileVersion>
-    <InformationalVersion>0.1.35+1.Branch.main.Sha.c33d0879382e1a0da34861ec55914ba7e637a80e</InformationalVersion>
+    <AssemblyVersion>0.1.38.0</AssemblyVersion>
+    <FileVersion>0.1.38.0</FileVersion>
+    <InformationalVersion>0.1.38+1.Branch.main.Sha.c33d0879382e1a0da34861ec55914ba7e637a80e</InformationalVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.691" IncludeAssets="compile" />
