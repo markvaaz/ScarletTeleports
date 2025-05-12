@@ -9,7 +9,7 @@ namespace ScarletTeleports.Data;
 public static class Settings {
   public static readonly string ConfigPath = Path.Combine(Paths.ConfigPath, "ScarletAuras");
   private static readonly Dictionary<string, object> Entries = [];
-  private static readonly List<string> OrderedSections = ["General"];
+  private static readonly List<string> OrderedSections = ["General", "Timers", "Prefabs", "Costs"];
 
   public static void Initialize() {
     Add("General", "EnablePersonalTeleports", true, "If enabled, allows players to create personal teleports.");
