@@ -35,6 +35,8 @@ public class PlayerData {
   public bool LoadedTeleports { get; set; } = false;
   [JsonIgnore]
   public bool IsAdmin => UserEntity.Read<User>().IsAdmin;
+  [JsonIgnore]
+  public DateTime OfflineSince { get; set; } = DateTime.MaxValue;
 
   public void AddTeleport(TeleportData teleport) {
     if (teleport == null) return;

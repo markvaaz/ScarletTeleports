@@ -2,6 +2,7 @@ using ProjectM;
 using ProjectM.Network;
 using Unity.Collections;
 using ScarletTeleports.Utils;
+using ScarletTeleports.Services;
 
 namespace ScarletTeleports.Systems;
 
@@ -18,7 +19,7 @@ public static class SystemMessages {
 
   public static void SendAdmins(string message) {
     var messageBytes = new FixedString512Bytes(message.White());
-    var admins = Core.Players.GetAdmins();
+    var admins = PlayerService.GetAdmins();
 
     foreach (var admin in admins) {
       var user = admin.UserEntity.Read<User>();

@@ -14,7 +14,6 @@ public static class Core {
   public static EntityManager EntityManager => Server.EntityManager;
   public static ServerGameManager GameManager => Server.GetExistingSystemManaged<ServerScriptMapper>().GetServerGameManager();
   public static UnitSpawnerUpdateSystem UnitSpawnerUpdateSystem => Core.Server.GetExistingSystemManaged<UnitSpawnerUpdateSystem>();
-  public static PlayerService Players { get; set; }
   public static bool hasInitialized = false;
 
   public static ManualLogSource Log { get; } = Plugin.LogInstance;
@@ -24,7 +23,7 @@ public static class Core {
 
     hasInitialized = true;
 
-    Players = new PlayerService();
+    PlayerService.Initialize();
     TeleportService.Initialize();
   }
 

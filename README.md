@@ -3,6 +3,12 @@
 ## Updates
 
 <details>
+<summary>Update 0.1.40</summary>
+  
+- More performance and stability improvements.
+</details>
+
+<details>
 <summary>Update 0.1.39</summary>
   
 - Improved performance and stability.
@@ -23,6 +29,12 @@
 ---
 
 ScarletTeleports adds a complete teleport system to V Rising servers. Players and admins can create, manage, and use personal or global teleport points, request teleports to other players, easily list or remove teleports, and set custom costs, cooldowns, and permissions. The mod also allows defining restricted zones where teleportation is limited, configuring consumable items required for each teleport, and setting individual limits per player. All features are accessible through chat commands, with permission support and advanced options for server administration.
+
+---
+
+## Support & Donations
+
+<a href='https://ko-fi.com/F2F21EWEM7' target='_blank'><img height='36' style='border:0px;height:36px;' src='https://storage.ko-fi.com/cdn/kofi6.png?v=6' alt='Buy Me a Coffee at ko-fi.com' /></a>
 
 ---
 

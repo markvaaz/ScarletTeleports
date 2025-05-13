@@ -7,12 +7,12 @@ using System.Linq;
 
 namespace ScarletTeleports.Services;
 
-public class PlayerService {
-  public readonly Dictionary<string, PlayerData> PlayerNames = [];
-  public readonly Dictionary<ulong, PlayerData> PlayerIds = [];
-  public readonly List<PlayerData> AllPlayers = [];
+public static class PlayerService {
+  public static readonly Dictionary<string, PlayerData> PlayerNames = [];
+  public static readonly Dictionary<ulong, PlayerData> PlayerIds = [];
+  public static readonly List<PlayerData> AllPlayers = [];
 
-  public PlayerService() {
+  public static void Initialize() {
     ClearCache();
     EntityQueryBuilder queryBuilder = new(Allocator.Temp);
 
@@ -35,12 +35,12 @@ public class PlayerService {
     }
   }
 
-  public void ClearCache() {
+  public static void ClearCache() {
     PlayerNames.Clear();
     PlayerIds.Clear();
   }
 
-  public void SetPlayerCache(Entity userEntity, bool isOffline = false) {
+  public static void SetPlayerCache(Entity userEntity, bool isOffline = false) {
     var userData = userEntity.Read<User>();
     var name = userData.CharacterName.ToString();
 
@@ -62,15 +62,26 @@ public class PlayerService {
     TeleportService.LoadPersonalTeleports(playerData);
   }
 
-  public List<PlayerData> GetAdmins() {
+  public static void ClearOfflinePlayers() {
+    AllPlayers.RemoveAll(p => {
+      var remove = !p.IsOnline;
+
+      PlayerIds.Remove(p.PlatformID);
+      PlayerNames.Remove(p.Name.ToLower());
+
+      return remove;
+    });
+  }
+
+  public static List<PlayerData> GetAdmins() {
     return [.. AllPlayers.Where(p => p.IsAdmin)];
   }
 
-  public bool TryGetById(ulong platformId, out PlayerData playerData) {
+  public static bool TryGetById(ulong platformId, out PlayerData playerData) {
     return PlayerIds.TryGetValue(platformId, out playerData);
   }
 
-  public bool TryGetByName(string name, out PlayerData playerData) {
+  public static bool TryGetByName(string name, out PlayerData playerData) {
     return PlayerNames.TryGetValue(name.ToLower(), out playerData);
   }
 }

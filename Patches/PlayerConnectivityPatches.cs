@@ -1,6 +1,7 @@
 using HarmonyLib;
 using ProjectM;
 using ProjectM.Network;
+using ScarletTeleports.Services;
 using Stunlock.Core;
 using Stunlock.Network;
 using System;
@@ -21,7 +22,7 @@ public static class OnUserConnected_Patch {
 			bool creatingCharacter = userData.CharacterName.IsEmpty;
 
 			if (!creatingCharacter) {
-				Core.Players.SetPlayerCache(userEntity);
+				PlayerService.SetPlayerCache(userEntity);
 			}
 		} catch (Exception e) {
 			Core.Log.LogError($"An error occurred while connecting player: {e.Message}");
@@ -41,7 +42,7 @@ public static class OnUserDisconnected_Patch {
 			bool creatingCharacter = userData.CharacterName.IsEmpty;
 
 			if (!creatingCharacter) {
-				Core.Players.SetPlayerCache(client.UserEntity, true);
+				PlayerService.SetPlayerCache(client.UserEntity, true);
 			}
 		} catch (Exception e) {
 			Core.Log.LogError($"An error occurred while disconnecting player: {e.Message}");
@@ -69,7 +70,7 @@ public class Destroy_TravelBuffSystem_Patch {
 
 					var userEntity = owner.Read<PlayerCharacter>().UserEntity;
 
-					Core.Players.SetPlayerCache(userEntity);
+					PlayerService.SetPlayerCache(userEntity);
 				}
 			}
 		} catch (Exception e) {

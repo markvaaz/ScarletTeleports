@@ -10,8 +10,6 @@ using ProjectM.Network;
 using ScarletTeleports.Systems;
 using Stunlock.Core;
 
-// TODO: REFACTOR THIS MESS
-
 namespace ScarletTeleports.Commands;
 [CommandGroup("stp")]
 public static class UserCommands {
@@ -292,7 +290,7 @@ public static class UserCommands {
   public static bool TryGetPlayerById(ChatCommandContext ctx, out PlayerData player) {
     player = null;
 
-    if (!Core.Players.TryGetById(ctx.User.PlatformId, out var playerData)) {
+    if (!PlayerService.TryGetById(ctx.User.PlatformId, out var playerData)) {
       ctx.Reply($"Unable to find your player data.".FormatError());
       return false;
     }
@@ -305,7 +303,7 @@ public static class UserCommands {
   public static bool TryGetPlayerByName(ChatCommandContext ctx, string name, out PlayerData player) {
     player = null;
 
-    if (!Core.Players.TryGetByName(name, out var playerData)) {
+    if (!PlayerService.TryGetByName(name, out var playerData)) {
       ctx.Reply($"Player ~{name}~ not found.".FormatError());
       return false;
     }

@@ -93,7 +93,7 @@ public class TeleportService {
   }
 
   public static void SaveAllPersonalTeleports() {
-    foreach (var player in Core.Players.AllPlayers) {
+    foreach (var player in PlayerService.AllPlayers) {
       SavePersonalTeleport(player);
     }
   }
@@ -204,11 +204,11 @@ public class TeleportService {
   }
 
   public static void CheckForExpiredRequests() {
-    foreach (var player in Core.Players.AllPlayers) {
+    foreach (var player in PlayerService.AllPlayers) {
       player.PendingRequests.RemoveWhere(request => {
         bool remove = request.ExpirationTime <= DateTime.Now;
 
-        if (remove && Core.Players.TryGetById(request.PlatformID, out var p)) {
+        if (remove && PlayerService.TryGetById(request.PlatformID, out var p)) {
           p.CanResquestTeleports = true;
         }
 

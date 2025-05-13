@@ -30,7 +30,7 @@ public static class AdminCommands {
   [Command("summon all", adminOnly: true)]
   public static void SummonAllPlayers(ChatCommandContext ctx) {
     if (!TryGetPlayerById(ctx, out var player)) return;
-    var players = Core.Players.AllPlayers;
+    var players = PlayerService.AllPlayers;
 
     foreach (var playerTarget in players) {
       if (!playerTarget.IsOnline) continue;
@@ -500,7 +500,7 @@ public static class AdminCommands {
 
   [Command("iwanttoclearallplayerteleports", adminOnly: true)]
   public static void ClearAllPlayerTeleports(ChatCommandContext ctx) {
-    Core.Players.AllPlayers.ForEach(p => p.Teleports.Clear());
+    PlayerService.AllPlayers.ForEach(p => p.Teleports.Clear());
     TeleportService.PersonalTeleports.Clear();
     TeleportService.SaveAllPersonalTeleports();
     ctx.Reply($"All global teleports cleared.".Format());
@@ -509,7 +509,7 @@ public static class AdminCommands {
   public static bool TryGetPlayerById(ChatCommandContext ctx, out PlayerData player) {
     player = null;
 
-    if (!Core.Players.TryGetById(ctx.User.PlatformId, out var playerData)) {
+    if (!PlayerService.TryGetById(ctx.User.PlatformId, out var playerData)) {
       ctx.Reply($"Unable to find your player data.".FormatError());
       return false;
     }
@@ -522,7 +522,7 @@ public static class AdminCommands {
   public static bool TryGetPlayerByName(ChatCommandContext ctx, string name, out PlayerData player) {
     player = null;
 
-    if (!Core.Players.TryGetByName(name, out var playerData)) {
+    if (!PlayerService.TryGetByName(name, out var playerData)) {
       ctx.Reply($"Player ~{name}~ not found.".FormatError());
       return false;
     }
