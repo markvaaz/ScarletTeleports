@@ -3,12 +3,6 @@
 ## Updates
 
 <details>
-<summary>Update 0.1.40</summary>
-  
-- More performance and stability improvements.
-</details>
-
-<details>
 <summary>Update 0.1.39</summary>
   
 - Improved performance and stability.
