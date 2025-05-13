@@ -3,8 +3,6 @@ using Unity.Mathematics;
 using Stunlock.Core;
 using System;
 using System.Text.Json.Serialization;
-using System.Runtime.Serialization;
-using System.Text.Json;
 
 namespace ScarletTeleports.Data;
 
