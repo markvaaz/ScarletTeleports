@@ -7,6 +7,7 @@ using ScarletTeleports.Data;
 using System.Collections.Generic;
 using System.Linq;
 using Stunlock.Core;
+using Unity.Transforms;
 
 namespace ScarletTeleports.Services;
 
@@ -51,23 +52,41 @@ public class TeleportService {
   }
 
   public static bool TeleportToPosition(PlayerData player, float3 position) {
-    var entity = entityManager.CreateEntity(
-      ComponentType.ReadWrite<FromCharacter>(),
-      ComponentType.ReadWrite<PlayerTeleportDebugEvent>()
-    );
+    var entity = player.CharacterEntity;
 
-    entityManager.SetComponentData<FromCharacter>(entity, new() {
-      User = player.UserEntity,
-      Character = player.CharacterEntity
-    });
+    if (entity.Has<SpawnTransform>()) {
+      var spawnTransform = entity.Read<SpawnTransform>();
+      spawnTransform.Position = position;
+      entity.Write(spawnTransform);
+    }
 
-    entityManager.SetComponentData<PlayerTeleportDebugEvent>(entity, new() {
-      Position = position,
-      Target = PlayerTeleportDebugEvent.TeleportTarget.Self
-    });
+    if (entityManager.HasComponent<Height>(entity)) {
+      var height = entity.Read<Height>();
+      height.LastPosition = position;
+      entity.Write(height);
+    }
+
+    if (entityManager.HasComponent<LocalTransform>(entity)) {
+      var localTransform = entity.Read<LocalTransform>();
+      localTransform.Position = position;
+      entity.Write(localTransform);
+    }
+
+    if (entityManager.HasComponent<Translation>(entity)) {
+      var translation = entity.Read<Translation>();
+      translation.Value = position;
+      entity.Write(translation);
+    }
+
+    if (entityManager.HasComponent<LastTranslation>(entity)) {
+      var lastTranslation = entity.Read<LastTranslation>();
+      lastTranslation.Value = position;
+      entity.Write(lastTranslation);
+    }
 
     return true;
   }
+
 
   public static void CreateGlobalTeleport(TeleportData teleportData) {
     if (HasGlobalTeleport(teleportData.Name)) {
