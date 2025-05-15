@@ -8,6 +8,7 @@ using Unity.Mathematics;
 using ScarletTeleports.Utils;
 
 namespace ScarletTeleports.Commands;
+
 [CommandGroup("stp")]
 public static class AdminCommands {
   [Command("goto", usage: "<x> <y> <z>", adminOnly: true)]
@@ -445,8 +446,6 @@ public static class AdminCommands {
 
     ctx.Reply($"Teleport ~{teleportName}~ prefab set to ~{prefabName}~ (~{prefabGUID}~).".Format());
   }
-
-  // ...existing code...
 
   [Command("get info", usage: "<player-name> <teleport-name>", adminOnly: true)]
   public static void GetTeleportInfo(ChatCommandContext ctx, string playerName, string teleportName) {
