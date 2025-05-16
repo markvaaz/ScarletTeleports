@@ -53,7 +53,7 @@ public static class PlayerService {
 
     var playerData = PlayerIds[userData.PlatformId];
 
-    if (playerData.Name != name) {
+    if (!string.IsNullOrEmpty(playerData.Name) && playerData.Name != name) {
       PlayerNames.Remove(playerData.Name.ToLower());
       PlayerNames[name.ToLower()] = playerData;
     }
