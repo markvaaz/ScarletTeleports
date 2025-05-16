@@ -53,6 +53,11 @@ public static class PlayerService {
 
     var playerData = PlayerIds[userData.PlatformId];
 
+    if (playerData.Name != name) {
+      PlayerNames.Remove(playerData.Name.ToLower());
+      PlayerNames[name.ToLower()] = playerData;
+    }
+
     playerData.Name = name;
     playerData.PlatformID = userData.PlatformId;
     playerData.IsOnline = !isOffline && userData.IsConnected;
