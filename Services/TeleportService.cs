@@ -2,7 +2,6 @@ using System;
 using Unity.Entities;
 using Unity.Mathematics;
 using ProjectM;
-using ProjectM.Network;
 using ScarletTeleports.Data;
 using System.Collections.Generic;
 using System.Linq;
@@ -87,7 +86,6 @@ public class TeleportService {
     return true;
   }
 
-
   public static void CreateGlobalTeleport(TeleportData teleportData) {
     if (HasGlobalTeleport(teleportData.Name)) {
       Core.Log.LogWarning($"Teleport {teleportData.Name} already exists.");
@@ -118,7 +116,7 @@ public class TeleportService {
   }
 
   public static void SavePersonalTeleport(PlayerData player) {
-    Database.Save($"PersonalTeleports/{player.PlatformID}", player);
+    Database.Save($"PersonalTeleports/{player.PlatformId}", player);
   }
 
   public static TeleportData GetGlobalTeleport(string name) {
@@ -155,7 +153,7 @@ public class TeleportService {
 
   public static bool LoadPersonalTeleports(PlayerData player) {
     player.Teleports.Clear();
-    var data = Database.Load<PlayerData>($"PersonalTeleports/{player.PlatformID}");
+    var data = Database.Load<PlayerData>($"PersonalTeleports/{player.PlatformId}");
 
     if (data == null) return false;
 

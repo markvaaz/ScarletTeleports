@@ -9,22 +9,28 @@ namespace ScarletTeleports.Data;
 
 public class PlayerData {
   [JsonIgnore]
-  public string Name { get; set; } = default;
+  public Entity UserEntity;
   [JsonIgnore]
-  public Entity UserEntity { get; set; } = default;
+  public User User => UserEntity.Read<User>();
   [JsonIgnore]
-  public Entity CharacterEntity { get; set; } = default;
+  public string Name => User.CharacterName.ToString();
   [JsonIgnore]
-  public ulong PlatformID { get; set; } = 0;
+  public Entity CharacterEntity => User.LocalCharacter._Entity;
   [JsonIgnore]
-  public bool IsOnline { get; set; } = false;
+  public ulong PlatformId => User.PlatformId;
+  [JsonIgnore]
+  public bool IsOnline => User.IsConnected;
+  [JsonIgnore]
+  public bool IsAdmin => User.IsAdmin;
+  [JsonIgnore]
+  public DateTime ConnectedSince => DateTimeOffset.FromUnixTimeSeconds(User.TimeLastConnected).DateTime;
   public int MaxTeleports { get; set; } = Settings.Get<int>("DefaultMaximumPersonalTeleports");
-  [JsonIgnore]
-  public bool CanResquestTeleports { get; set; } = true;
   public bool BypassCost { get; set; } = false;
   public bool BypassCooldown { get; set; } = false;
   public bool BypassDraculaRoom { get; set; } = false;
   public bool BypassCombat { get; set; } = false;
+  [JsonIgnore]
+  public bool CanResquestTeleports { get; set; } = true;
   public bool BypassRestrictedZones { get; set; } = false;
   public HashSet<TeleportData> Teleports { get; set; } = [];
   [JsonIgnore]
@@ -33,10 +39,6 @@ public class PlayerData {
   public DateTime LastTeleportTime { get; set; } = DateTime.Now.AddHours(-1);
   [JsonIgnore]
   public bool LoadedTeleports { get; set; } = false;
-  [JsonIgnore]
-  public bool IsAdmin => UserEntity.Read<User>().IsAdmin;
-  [JsonIgnore]
-  public DateTime OfflineSince { get; set; } = DateTime.MaxValue;
 
   public void AddTeleport(TeleportData teleport) {
     if (teleport == null) return;

@@ -7,12 +7,19 @@ using ScarletTeleports.Data;
 using ScarletTeleports.Utils;
 using System.Linq;
 using ProjectM.Network;
-using ScarletTeleports.Systems;
 using Stunlock.Core;
+using ScarletTeleports.Systems;
 
 namespace ScarletTeleports.Commands;
-[CommandGroup("stp")]
+
+public static class Constants {
+  public const string Prefix = "stp";
+}
+
+[CommandGroup(Constants.Prefix)]
 public static class UserCommands {
+  private static readonly string Prefix = Constants.Prefix;
+
   [Command("setteleport", usage: "<teleport-name>", shortHand: "stp")]
   public static void SetTeleport(ChatCommandContext ctx, string teleportName) {
     if (!Settings.Get<bool>("EnablePersonalTeleports")) return;
@@ -191,15 +198,15 @@ public static class UserCommands {
       return;
     }
 
-    playerTarget.PendingRequests.Add(new TeleportRequestData(player.PlatformID));
+    playerTarget.PendingRequests.Add(new TeleportRequestData(player.PlatformId));
 
     player.CanResquestTeleports = false;
 
     var user = playerTarget.UserEntity.Read<User>();
 
     SystemMessages.Send(user, $"~{player.Name}~ has requested to teleport to you, you have ~{Settings.Get<int>("TeleportRequestExpiration")}~ seconds to respond.".Format());
-    SystemMessages.Send(user, $"Use ~.st tpa {player.Name}~ to ~accept~ the request.".Format([null, "green"]));
-    SystemMessages.Send(user, $"Use ~.st tpd {player.Name}~ to ~deny~ the request.".Format([null, "#ff4d4d"]));
+    SystemMessages.Send(user, $"Use ~.{Prefix} tpa {player.Name}~ to ~accept~ the request.".Format([null, "green"]));
+    SystemMessages.Send(user, $"Use ~.{Prefix} tpd {player.Name}~ to ~deny~ the request.".Format([null, "#ff4d4d"]));
 
     ctx.Reply($"Teleport request sent to ~{playerName}~.".Format());
   }
@@ -210,7 +217,7 @@ public static class UserCommands {
     if (!TryGetPlayerByName(ctx, playerName, out var playerTarget)) return;
 
     // Check if the player has a pending request
-    if (!player.PendingRequests.Any(r => r.PlatformID == playerTarget.PlatformID)) {
+    if (!player.PendingRequests.Any(r => r.PlatformID == playerTarget.PlatformId)) {
       ctx.Reply($"You do not have a pending request from ~{playerName}~.".FormatError());
       return;
     }
@@ -274,12 +281,12 @@ public static class UserCommands {
     if (!TryGetPlayerById(ctx, out var player)) return;
     if (!TryGetPlayerByName(ctx, playerName, out var playerTarget)) return;
 
-    if (!player.PendingRequests.Any(r => r.PlatformID == playerTarget.PlatformID)) {
+    if (!player.PendingRequests.Any(r => r.PlatformID == playerTarget.PlatformId)) {
       ctx.Reply($"You do not have a pending request from ~{playerName}~.".FormatError());
       return;
     }
 
-    player.PendingRequests.RemoveWhere(r => r.PlatformID == playerTarget.PlatformID);
+    player.PendingRequests.RemoveWhere(r => r.PlatformID == playerTarget.PlatformId);
 
     playerTarget.CanResquestTeleports = true;
 
