@@ -1,6 +1,12 @@
 ## Updates
 
 <details>
+<summary>Update 1.0.0</summary>
+  
+- Removed `Destroy_TravelBuffSystem.OnUpdate` patch, as it was causing lag. 
+</details>
+
+<details>
 <summary>Update 0.1.41</summary>
   
 - Teleport system optimized: resolved an issue that caused unnecessary memory allocation, which could lead to exponential growth over time.

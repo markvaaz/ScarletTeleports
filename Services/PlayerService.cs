@@ -52,6 +52,7 @@ public static class PlayerService {
         UnnamedPlayers.Add(newData);
       } else {
         PlayerNames[name.ToLower()] = newData;
+        newData.SetName(name);
       }
 
       PlayerIds[userData.PlatformId] = newData;
@@ -64,6 +65,7 @@ public static class PlayerService {
 
     if (!string.IsNullOrEmpty(playerData.Name) && playerData.Name != name) {
       PlayerNames.Remove(playerData.Name.ToLower());
+      playerData.SetName(name);
       PlayerNames[name.ToLower()] = playerData;
     }
 

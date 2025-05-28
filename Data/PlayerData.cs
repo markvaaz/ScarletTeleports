@@ -13,7 +13,20 @@ public class PlayerData {
   [JsonIgnore]
   public User User => UserEntity.Read<User>();
   [JsonIgnore]
-  public string Name => User.CharacterName.ToString();
+  private string _name = null;
+  [JsonIgnore]
+  public string Name {
+    get {
+      if (string.IsNullOrEmpty(_name)) {
+        _name = User.CharacterName.ToString();
+      }
+
+      return _name;
+    }
+  }
+  public void SetName(string name) {
+    _name = name;
+  }
   [JsonIgnore]
   public Entity CharacterEntity => User.LocalCharacter._Entity;
   [JsonIgnore]
