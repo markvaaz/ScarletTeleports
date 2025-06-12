@@ -53,7 +53,7 @@ public class TeleportData {
 
 public class TeleportRequestData {
   public ulong PlatformID { get; set; }
-  public DateTime ExpirationTime { get; set; } = DateTime.Now.AddSeconds(Settings.Get<int>("TeleportRequestExpiration"));
+  public DateTime ExpirationTime { get; set; } = DateTime.Now.AddSeconds(Plugin.Settings.Get<int>("TeleportRequestExpiration"));
 
   public TeleportRequestData(ulong platformID) {
     PlatformID = platformID;

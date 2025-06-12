@@ -1,30 +1,12 @@
-using Unity.Entities;
 using System.Collections.Generic;
-using ProjectM.Network;
 using System.Linq;
 using System;
 using System.Text.Json.Serialization;
 
 namespace ScarletTeleports.Data;
 
-public class PlayerData {
-  [JsonIgnore]
-  public Entity UserEntity;
-  [JsonIgnore]
-  public User User => UserEntity.Read<User>();
-  [JsonIgnore]
-  public string Name => User.CharacterName.ToString();
-  [JsonIgnore]
-  public Entity CharacterEntity => User.LocalCharacter._Entity;
-  [JsonIgnore]
-  public ulong PlatformId => User.PlatformId;
-  [JsonIgnore]
-  public bool IsOnline => User.IsConnected;
-  [JsonIgnore]
-  public bool IsAdmin => User.IsAdmin;
-  [JsonIgnore]
-  public DateTime ConnectedSince => DateTimeOffset.FromUnixTimeSeconds(User.TimeLastConnected).DateTime;
-  public int MaxTeleports { get; set; } = Settings.Get<int>("DefaultMaximumPersonalTeleports");
+public class CustomPlayerData {
+  public int MaxTeleports { get; set; } = Plugin.Settings.Get<int>("DefaultMaximumPersonalTeleports");
   public bool BypassCost { get; set; } = false;
   public bool BypassCooldown { get; set; } = false;
   public bool BypassDraculaRoom { get; set; } = false;

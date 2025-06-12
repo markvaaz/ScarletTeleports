@@ -1,20 +1,24 @@
 using Command = VampireCommandFramework.CommandAttribute;
 using CommandGroup = VampireCommandFramework.CommandGroupAttribute;
 using ChatCommandContext = VampireCommandFramework.ChatCommandContext;
-using ScarletTeleports.Services;
 using ScarletTeleports.Data;
 using Stunlock.Core;
 using Unity.Mathematics;
 using ScarletTeleports.Utils;
+using ScarletCore.Services;
+using ScarletTeleports.Services;
+using ScarletCore.Data;
 
 namespace ScarletTeleports.Commands;
 
 [CommandGroup("stp")]
 public static class AdminCommands {
+  private static Settings Settings => Plugin.Settings;
+
   [Command("goto", usage: "<x> <y> <z>", adminOnly: true)]
   public static void GotoTeleport(ChatCommandContext ctx, int x, int y, int z) {
     if (!TryGetPlayerById(ctx, out var player)) return;
-    TeleportService.TeleportToPosition(player, new float3(x, y, z));
+    TeleportService.TeleportToPosition(player.CharacterEntity, new float3(x, y, z));
 
     ctx.Reply($"Teleported you to ~({x}, {y}, {z})~.".Format());
   }
@@ -23,7 +27,7 @@ public static class AdminCommands {
   public static void GotoTeleport(ChatCommandContext ctx, string playerName) {
     if (!TryGetPlayerById(ctx, out var player)) return;
     if (!TryGetPlayerByName(ctx, playerName, out var playerTarget)) return;
-    TeleportService.TeleportToPosition(player, playerTarget.CharacterEntity.GetPosition());
+    TeleportService.TeleportToPosition(player.CharacterEntity, playerTarget.CharacterEntity.GetPosition());
 
     ctx.Reply($"Teleported you to ~{playerName}~.".Format());
   }
@@ -35,7 +39,7 @@ public static class AdminCommands {
 
     foreach (var playerTarget in players) {
       if (!playerTarget.IsOnline) continue;
-      TeleportService.TeleportToPosition(playerTarget, player.CharacterEntity.GetPosition());
+      TeleportService.TeleportToPosition(playerTarget.CharacterEntity, player.CharacterEntity.GetPosition());
     }
 
     ctx.Reply($"Teleported ~All~ players to you.".Format());
@@ -45,7 +49,7 @@ public static class AdminCommands {
   public static void SummonPlayer(ChatCommandContext ctx, string playerName) {
     if (!TryGetPlayerById(ctx, out var player)) return;
     if (!TryGetPlayerByName(ctx, playerName, out var playerTarget)) return;
-    TeleportService.TeleportToPosition(playerTarget, player.CharacterEntity.GetPosition());
+    TeleportService.TeleportToPosition(playerTarget.CharacterEntity, player.CharacterEntity.GetPosition());
 
     ctx.Reply($"Teleported ~{playerName}~ to you.".Format());
   }
@@ -84,7 +88,7 @@ public static class AdminCommands {
 
   [Command("remove global", usage: "<teleport-name>", adminOnly: true)]
   public static void RemoveTeleport(ChatCommandContext ctx, string teleportName) {
-    if (TeleportService.RemoveGlobalTeleport(teleportName)) {
+    if (TeleportManager.RemoveGlobalTeleport(teleportName)) {
       ctx.Reply($"Global Teleport ~{teleportName}~ removed successfully.".Format());
     } else {
       ctx.Reply($"Global Teleport ~{teleportName}~ not found.".FormatError());
@@ -135,7 +139,7 @@ public static class AdminCommands {
   public static void RemoveTeleport(ChatCommandContext ctx, string playerName, string teleportName) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
 
-    if (TeleportService.RemovePersonalTeleport(player, teleportName)) {
+    if (TeleportManager.RemovePersonalTeleport(player, teleportName)) {
       ctx.Reply($"Teleport ~{teleportName}~ removed successfully.".Format());
     } else {
       ctx.Reply($"Teleport ~{teleportName}~ not found.".FormatError());
@@ -170,7 +174,7 @@ public static class AdminCommands {
 
   [Command("remove restricted", usage: "<name>", adminOnly: true)]
   public static void RemoveRestricted(ChatCommandContext ctx, string name) {
-    if (TeleportService.RemoveRestrictedZone(name)) {
+    if (TeleportManager.RemoveRestrictedZone(name)) {
       ctx.Reply($"Restricted area ~{name}~ removed successfully.".Format());
     } else {
       ctx.Reply($"Restricted area ~{name}~ not found.".FormatError());
@@ -181,7 +185,7 @@ public static class AdminCommands {
 
   [Command("list all", adminOnly: true)]
   public static void ListAll(ChatCommandContext ctx) {
-    var teleports = TeleportService.GetAllTeleports();
+    var teleports = TeleportManager.GetAllTeleports();
     ctx.Reply($"__**~All Teleports:~**__".Format());
 
     foreach (var t in teleports) {
@@ -193,7 +197,7 @@ public static class AdminCommands {
 
   [Command("list restricted", adminOnly: true)]
   public static void ListRestrictedZones(ChatCommandContext ctx) {
-    var zones = TeleportService.RestrictedZones;
+    var zones = TeleportManager.RestrictedZones;
     ctx.Reply("__**~Restricted Zones:~**__".Format());
 
     foreach (var zone in zones.Values) {
@@ -205,7 +209,7 @@ public static class AdminCommands {
 
   [Command("list global", adminOnly: true)]
   public static void ListTeleports(ChatCommandContext ctx) {
-    var teleports = TeleportService.GlobalTeleports;
+    var teleports = TeleportManager.GlobalTeleports;
     ctx.Reply("__**~Global Teleports:~**__".Format());
 
     foreach (var teleport in teleports.Values) {
@@ -221,7 +225,8 @@ public static class AdminCommands {
 
     ctx.Reply($"**Teleports for ~{playerName}~:**".Format());
 
-    var teleports = player.Teleports;
+    var playerCD = TeleportManager.GetCustomPlayerData(player);
+    var teleports = playerCD.Teleports;
 
     foreach (var teleport in teleports) {
       ctx.Reply($" • ~{teleport.Name}~ ({teleport.Position.x}, {teleport.Position.y}, {teleport.Position.z})".Format());
@@ -234,28 +239,30 @@ public static class AdminCommands {
   public static void SetBypassOption(ChatCommandContext ctx, string playerName, string option, bool value) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
 
+    var playerCD = TeleportManager.GetCustomPlayerData(player);
+
     switch (option.ToLower()) {
       case "cost":
-        player.BypassCost = value;
+        playerCD.BypassCost = value;
         break;
       case "cooldown":
-        player.BypassCooldown = value;
+        playerCD.BypassCooldown = value;
         break;
       case "dracularoom":
-        player.BypassDraculaRoom = value;
+        playerCD.BypassDraculaRoom = value;
         break;
       case "combat":
-        player.BypassCombat = value;
+        playerCD.BypassCombat = value;
         break;
       case "restricted":
-        player.BypassRestrictedZones = value;
+        playerCD.BypassRestrictedZones = value;
         break;
       default:
         ctx.Reply($"~Invalid option.~ Use: cost, cooldown, dracularoom, or combat.".FormatError());
         return;
     }
 
-    TeleportService.SavePersonalTeleport(player);
+    TeleportManager.SavePersonalTeleport(player);
     ctx.Reply($"Bypass ~{option.ToLower()}~ for ~{playerName}~ set to ~{value}~.".Format());
   }
 
@@ -320,10 +327,11 @@ public static class AdminCommands {
       ctx.Reply($"Max teleports cannot be negative.".FormatError());
       return;
     }
+    var playerCD = TeleportManager.GetCustomPlayerData(player);
 
-    player.MaxTeleports = maxTeleports;
+    playerCD.MaxTeleports = maxTeleports;
 
-    TeleportService.SavePersonalTeleport(player);
+    TeleportManager.SavePersonalTeleport(player);
 
     ctx.Reply($"Max teleports for ~{playerName}~ set to ~{maxTeleports}~.".Format());
   }
@@ -332,7 +340,8 @@ public static class AdminCommands {
   public static void SetTeleportCost(ChatCommandContext ctx, string playerName, string teleportName, int cost) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
 
-    var teleport = player.GetTeleport(teleportName);
+    var playerCD = TeleportManager.GetCustomPlayerData(player);
+    var teleport = playerCD.GetTeleport(teleportName);
 
     if (teleport.Equals(default(TeleportData))) {
       ctx.Reply($"Teleport ~{teleportName}~ not found.".FormatError());
@@ -342,14 +351,14 @@ public static class AdminCommands {
     teleport.Cost = cost;
     teleport.IsDefaultCost = false;
 
-    TeleportService.SavePersonalTeleport(player);
+    TeleportManager.SavePersonalTeleport(player);
 
     ctx.Reply($"Teleport ~{teleportName}~ cost set to ~{cost}~.".Format());
   }
 
   [Command("set cost", usage: "<global-teleport-name> <cost>", adminOnly: true)]
   public static void SetTeleportCost(ChatCommandContext ctx, string teleportName, int cost) {
-    var teleport = TeleportService.GetGlobalTeleport(teleportName);
+    var teleport = TeleportManager.GetGlobalTeleport(teleportName);
 
     if (teleport.Equals(default(TeleportData))) {
       ctx.Reply($"Teleport ~{teleportName}~ not found.".FormatError());
@@ -358,7 +367,7 @@ public static class AdminCommands {
 
     teleport.Cost = cost;
 
-    TeleportService.SaveGlobalTeleports();
+    TeleportManager.SaveGlobalTeleports();
 
     ctx.Reply($"Teleport ~{teleportName}~ cost set to ~{cost}~.".Format());
   }
@@ -367,7 +376,8 @@ public static class AdminCommands {
   public static void SetTeleportCooldown(ChatCommandContext ctx, string playerName, string teleportName, int cooldown) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
 
-    var teleport = player.GetTeleport(teleportName);
+    var playerCD = TeleportManager.GetCustomPlayerData(player);
+    var teleport = playerCD.GetTeleport(teleportName);
 
     if (teleport.Equals(default(TeleportData))) {
       ctx.Reply($"Teleport ~{teleportName}~ not found.".FormatError());
@@ -377,14 +387,14 @@ public static class AdminCommands {
     teleport.Cooldown = cooldown;
     teleport.IsDefaultCooldown = false;
 
-    TeleportService.SavePersonalTeleport(player);
+    TeleportManager.SavePersonalTeleport(player);
 
     ctx.Reply($"Teleport ~{teleportName}~ cooldown set to ~{cooldown}~.".Format());
   }
 
   [Command("set cooldown", usage: "<teleport-name> <cooldown>", adminOnly: true)]
   public static void SetTeleportCooldown(ChatCommandContext ctx, string teleportName, int cooldown) {
-    var teleport = TeleportService.GetGlobalTeleport(teleportName);
+    var teleport = TeleportManager.GetGlobalTeleport(teleportName);
 
     if (teleport.Equals(default(TeleportData))) {
       ctx.Reply($"Teleport ~{teleportName}~ not found.".FormatError());
@@ -394,7 +404,7 @@ public static class AdminCommands {
     teleport.Cooldown = cooldown;
     teleport.IsDefaultCooldown = false;
 
-    TeleportService.SaveGlobalTeleports();
+    TeleportManager.SaveGlobalTeleports();
 
     ctx.Reply($"Teleport ~{teleportName}~ cooldown set to ~{cooldown}~.".Format());
   }
@@ -403,7 +413,8 @@ public static class AdminCommands {
   public static void SetTeleportPrefab(ChatCommandContext ctx, string playerName, string teleportName, string prefabName, string prefabGUID) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
 
-    var teleport = player.GetTeleport(teleportName);
+    var playerCD = TeleportManager.GetCustomPlayerData(player);
+    var teleport = playerCD.GetTeleport(teleportName);
 
     if (teleport.Equals(default(TeleportData))) {
       ctx.Reply($"Teleport ~{teleportName}~ not found.".FormatError());
@@ -419,14 +430,14 @@ public static class AdminCommands {
     teleport.PrefabGUID = parsedPrefab;
     teleport.IsDefaultPrefab = false;
 
-    TeleportService.SavePersonalTeleport(player);
+    TeleportManager.SavePersonalTeleport(player);
 
     ctx.Reply($"Teleport ~{teleportName}~ prefab set to ~{prefabGUID}~.".Format());
   }
 
   [Command("set prefab", usage: "<teleport-name> <prefab-name> <prefab-guid>", adminOnly: true)]
   public static void SetTeleportPrefab(ChatCommandContext ctx, string teleportName, string prefabName, string prefabGUID) {
-    var teleport = TeleportService.GetGlobalTeleport(teleportName);
+    var teleport = TeleportManager.GetGlobalTeleport(teleportName);
 
     if (teleport.Equals(default(TeleportData))) {
       ctx.Reply($"Teleport ~{teleportName}~ not found.".FormatError());
@@ -442,7 +453,7 @@ public static class AdminCommands {
     teleport.PrefabGUID = parsedPrefab;
     teleport.IsDefaultPrefab = false;
 
-    TeleportService.SaveGlobalTeleports();
+    TeleportManager.SaveGlobalTeleports();
 
     ctx.Reply($"Teleport ~{teleportName}~ prefab set to ~{prefabName}~ (~{prefabGUID}~).".Format());
   }
@@ -451,7 +462,8 @@ public static class AdminCommands {
   public static void GetTeleportInfo(ChatCommandContext ctx, string playerName, string teleportName) {
     if (!TryGetPlayerByName(ctx, playerName, out var player)) return;
 
-    var teleport = player.GetTeleport(teleportName);
+    var playerCD = TeleportManager.GetCustomPlayerData(player);
+    var teleport = playerCD.GetTeleport(teleportName);
 
     if (teleport.Equals(default(TeleportData))) {
       ctx.Reply($"Teleport ~{teleportName}~ not found.".FormatError());
@@ -467,7 +479,7 @@ public static class AdminCommands {
 
   [Command("get info", usage: "<teleport-name>", adminOnly: true)]
   public static void GetGlobalTeleportInfo(ChatCommandContext ctx, string teleportName) {
-    var teleport = TeleportService.GetGlobalTeleport(teleportName);
+    var teleport = TeleportManager.GetGlobalTeleport(teleportName);
 
     if (teleport.Equals(default(TeleportData))) {
       ctx.Reply($"Teleport ~{teleportName}~ not found.".FormatError());
@@ -492,16 +504,19 @@ public static class AdminCommands {
 
   [Command("iwanttoclearallglobalteleports", adminOnly: true)]
   public static void ClearAllGlobalTeleports(ChatCommandContext ctx) {
-    TeleportService.GlobalTeleports.Clear();
-    TeleportService.SaveGlobalTeleports();
+    TeleportManager.GlobalTeleports.Clear();
+    TeleportManager.SaveGlobalTeleports();
     ctx.Reply($"All global teleports cleared.".Format());
   }
 
   [Command("iwanttoclearallplayerteleports", adminOnly: true)]
   public static void ClearAllPlayerTeleports(ChatCommandContext ctx) {
-    PlayerService.AllPlayers.ForEach(p => p.Teleports.Clear());
-    TeleportService.PersonalTeleports.Clear();
-    TeleportService.SaveAllPersonalTeleports();
+    PlayerService.AllPlayers.ForEach(p => {
+      var playerCD = TeleportManager.GetCustomPlayerData(p);
+      playerCD.Teleports.Clear();
+    });
+    TeleportManager.PersonalTeleports.Clear();
+    TeleportManager.SaveAllPersonalTeleports();
     ctx.Reply($"All global teleports cleared.".Format());
   }
 
@@ -532,7 +547,7 @@ public static class AdminCommands {
   }
 
   public static void CreateRestrictedZone(ChatCommandContext ctx, string name, float radius, float x, float y, float z, bool canTeleportTo = false, bool canTeleportFrom = false) {
-    TeleportService.CreateRestrictedZone(new ZoneData(
+    TeleportManager.CreateRestrictedZone(new ZoneData(
       name,
       [x, y, z],
       radius,
@@ -545,7 +560,8 @@ public static class AdminCommands {
 
 
   private static void CreatePersonalTeleport(ChatCommandContext ctx, PlayerData player, string name, string teleportName, float x, float y, float z, string prefabName = null, PrefabGUID prefabGUID = default, int? cost = null, int? cooldown = null) {
-    if (player.HasTeleport(teleportName)) {
+    var playerCD = TeleportManager.GetCustomPlayerData(player);
+    if (playerCD.HasTeleport(teleportName)) {
       ctx.Reply($"Teleport ~{teleportName}~ already exists.".FormatError());
       return;
     }
@@ -561,15 +577,16 @@ public static class AdminCommands {
       PrefabName = prefabName ?? Settings.Get<string>("DefaultPersonalPrefabName"),
       PrefabGUID = prefabGUID == default ? new(Settings.Get<int>("DefaultPersonalPrefabGUID")) : prefabGUID,
       Cost = cost ?? Settings.Get<int>("DefaultPersonalCost"),
-      Cooldown = cooldown ?? Settings.Get<int>("DefaultPersonalCooldown")
+      Cooldown = cooldown ?? Settings.Get<int>("DefaultPersonalCooldown"),
+      CharacterName = player.Name,
     };
 
-    TeleportService.CreatePersonalTeleport(player, teleportData);
+    TeleportManager.CreatePersonalTeleport(player, teleportData);
     ctx.Reply($"Teleport ~{teleportName}~ added successfully for ~{name}~.".Format());
   }
 
   public static void CreateGlobalTeleport(ChatCommandContext ctx, string teleportName, float x, float y, float z, string prefabName = null, PrefabGUID prefabGUID = default, int? cost = null, int? cooldown = null) {
-    if (TeleportService.HasGlobalTeleport(teleportName)) {
+    if (TeleportManager.HasGlobalTeleport(teleportName)) {
       ctx.Reply($"Teleport ~{teleportName}~ already exists.".FormatError());
       return;
     }
@@ -588,7 +605,7 @@ public static class AdminCommands {
       Cooldown = cooldown ?? Settings.Get<int>("DefaultGlobalCooldown")
     };
 
-    TeleportService.CreateGlobalTeleport(teleportData);
+    TeleportManager.CreateGlobalTeleport(teleportData);
     ctx.Reply($"Global Teleport ~{teleportName}~ added successfully.".Format());
   }
 }

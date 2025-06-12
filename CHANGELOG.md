@@ -1,6 +1,21 @@
 ## Updates
 
 <details>
+<summary>Update 1.1.0</summary>
+  
+- **Major Refactor**: Migrated most services and systems to use existing ScarletCore infrastructure.
+- Improved performance and reduced code duplication by leveraging ScarletCore's established systems.
+- Enhanced compatibility and stability through unified core architecture.
+- Reduced mod footprint and potential conflicts with other ScarletCore-based mods.
+</details>
+
+<details>
+<summary>Update 1.0.0</summary>
+  
+- Removed `Destroy_TravelBuffSystem.OnUpdate` patch, as it was causing lag. 
+</details>
+
+<details>
 <summary>Update 0.1.41</summary>
   
 - Teleport system optimized: resolved an issue that caused unnecessary memory allocation, which could lead to exponential growth over time.

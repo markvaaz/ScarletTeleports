@@ -1,25 +1,35 @@
 using System;
 using Unity.Entities;
 using Unity.Mathematics;
-using ProjectM;
 using ScarletTeleports.Data;
 using System.Collections.Generic;
 using System.Linq;
 using Stunlock.Core;
-using Unity.Transforms;
+using ScarletCore.Events;
+using ScarletCore.Data;
+using ScarletCore.Services;
+using ScarletCore.Utils;
+using ScarletCore.Systems;
 
 namespace ScarletTeleports.Services;
 
-public class TeleportService {
-
+public class TeleportManager {
+  private static Settings Settings => Plugin.Settings;
+  private static Database Database => Plugin.Database;
   public static HashSet<TeleportData> PersonalTeleports { get; private set; } = [];
   public static Dictionary<string, TeleportData> GlobalTeleports { get; private set; } = [];
   public static Dictionary<string, ZoneData> RestrictedZones { get; private set; } = [];
-  private static EntityManager entityManager => Core.EntityManager;
-  public static void Initialize() {
+  public static void Initialize(object _, InitializeEventArgs args) {
     LoadGlobalTeleports();
     LoadRestrictedZones();
     CoroutineHandler.StartRepeatingCoroutine(CheckForExpiredRequests, 20);
+    EventManager.OnUserConnected += LoadPersonalTeleportEvent;
+  }
+
+  public static void LoadPersonalTeleportEvent(object _, UserConnectedEventArgs args) {
+    var playerData = args.Player;
+
+    LoadPersonalTeleports(playerData);
   }
 
   public static void AddPersonalTeleport(TeleportData teleportData) {
@@ -39,7 +49,7 @@ public class TeleportService {
   }
 
   public static bool IsPlayerInCombat(Entity player) {
-    return BuffUtility.HasBuff(entityManager, player, new PrefabGUID(581443919)) || BuffUtility.HasBuff(entityManager, player, new PrefabGUID(697095869));
+    return BuffService.HasBuff(player, new PrefabGUID(581443919)) || BuffService.HasBuff(player, new PrefabGUID(697095869));
   }
 
   public static bool IsInDraculaRoom(Entity player) {
@@ -50,45 +60,9 @@ public class TeleportService {
     return distance < 80f;
   }
 
-  public static bool TeleportToPosition(PlayerData player, float3 position) {
-    var entity = player.CharacterEntity;
-
-    if (entity.Has<SpawnTransform>()) {
-      var spawnTransform = entity.Read<SpawnTransform>();
-      spawnTransform.Position = position;
-      entity.Write(spawnTransform);
-    }
-
-    if (entityManager.HasComponent<Height>(entity)) {
-      var height = entity.Read<Height>();
-      height.LastPosition = position;
-      entity.Write(height);
-    }
-
-    if (entityManager.HasComponent<LocalTransform>(entity)) {
-      var localTransform = entity.Read<LocalTransform>();
-      localTransform.Position = position;
-      entity.Write(localTransform);
-    }
-
-    if (entityManager.HasComponent<Translation>(entity)) {
-      var translation = entity.Read<Translation>();
-      translation.Value = position;
-      entity.Write(translation);
-    }
-
-    if (entityManager.HasComponent<LastTranslation>(entity)) {
-      var lastTranslation = entity.Read<LastTranslation>();
-      lastTranslation.Value = position;
-      entity.Write(lastTranslation);
-    }
-
-    return true;
-  }
-
   public static void CreateGlobalTeleport(TeleportData teleportData) {
     if (HasGlobalTeleport(teleportData.Name)) {
-      Core.Log.LogWarning($"Teleport {teleportData.Name} already exists.");
+      Log.Warning($"Teleport {teleportData.Name} already exists.");
       return;
     }
 
@@ -97,8 +71,21 @@ public class TeleportService {
     SaveGlobalTeleports();
   }
 
+  public static CustomPlayerData GetCustomPlayerData(PlayerData player) {
+    var customData = player.GetData<CustomPlayerData>();
+
+    if (customData == null) {
+      customData = new CustomPlayerData();
+      player.SetData(customData);
+    }
+
+    return customData;
+  }
+
   public static void CreatePersonalTeleport(PlayerData player, TeleportData teleportData) {
-    player.AddTeleport(teleportData);
+    var customData = GetCustomPlayerData(player);
+
+    customData.AddTeleport(teleportData);
 
     AddPersonalTeleport(teleportData);
 
@@ -116,7 +103,7 @@ public class TeleportService {
   }
 
   public static void SavePersonalTeleport(PlayerData player) {
-    Database.Save($"PersonalTeleports/{player.PlatformId}", player);
+    Database.Save($"PersonalTeleports/{player.PlatformId}", player.GetData<CustomPlayerData>());
   }
 
   public static TeleportData GetGlobalTeleport(string name) {
@@ -152,18 +139,21 @@ public class TeleportService {
   }
 
   public static bool LoadPersonalTeleports(PlayerData player) {
-    player.Teleports.Clear();
-    var data = Database.Load<PlayerData>($"PersonalTeleports/{player.PlatformId}");
+    var customData = GetCustomPlayerData(player);
+
+    customData.Teleports.Clear();
+
+    var data = Database.Load<CustomPlayerData>($"PersonalTeleports/{player.PlatformId}");
 
     if (data == null) return false;
 
     var teleports = data.Teleports;
 
-    player.MaxTeleports = data.MaxTeleports;
-    player.BypassCost = data.BypassCost;
-    player.BypassCooldown = data.BypassCooldown;
-    player.BypassDraculaRoom = data.BypassDraculaRoom;
-    player.BypassCombat = data.BypassCombat;
+    customData.MaxTeleports = data.MaxTeleports;
+    customData.BypassCost = data.BypassCost;
+    customData.BypassCooldown = data.BypassCooldown;
+    customData.BypassDraculaRoom = data.BypassDraculaRoom;
+    customData.BypassCombat = data.BypassCombat;
 
     if (teleports == null) return false;
 
@@ -180,7 +170,7 @@ public class TeleportService {
         teleportData.Cooldown = Settings.Get<int>("DefaultPersonalCooldown");
       }
 
-      player.AddTeleport(teleportData);
+      customData.AddTeleport(teleportData);
 
       AddPersonalTeleport(teleportData);
     }
@@ -191,11 +181,13 @@ public class TeleportService {
   }
 
   public static bool RemovePersonalTeleport(PlayerData player, string name) {
-    if (!player.HasTeleport(name)) return false;
+    var customData = GetCustomPlayerData(player);
 
-    var teleport = player.GetTeleport(name);
+    if (!customData.HasTeleport(name)) return false;
 
-    player.RemoveTeleport(name);
+    var teleport = customData.GetTeleport(name);
+
+    customData.RemoveTeleport(name);
     PersonalTeleports.Remove(teleport);
     SavePersonalTeleport(player);
     return true;
@@ -209,7 +201,7 @@ public class TeleportService {
       SaveGlobalTeleports();
       return true;
     } else {
-      Core.Log.LogWarning($"Teleport {name} not found.");
+      Log.Warning($"Teleport {name} not found.");
       return false;
     }
   }
@@ -222,11 +214,13 @@ public class TeleportService {
 
   public static void CheckForExpiredRequests() {
     foreach (var player in PlayerService.AllPlayers) {
-      player.PendingRequests.RemoveWhere(request => {
+      var customData = GetCustomPlayerData(player);
+      customData.PendingRequests.RemoveWhere(request => {
         bool remove = request.ExpirationTime <= DateTime.Now;
 
         if (remove && PlayerService.TryGetById(request.PlatformID, out var p)) {
-          p.CanResquestTeleports = true;
+          var pCustomData = GetCustomPlayerData(p);
+          pCustomData.CanResquestTeleports = true;
         }
 
         return remove;

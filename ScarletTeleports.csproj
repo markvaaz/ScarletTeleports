@@ -3,12 +3,12 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>ScarletTeleports</AssemblyName>
     <Description>Teleportation mod</Description>
-    <Version>0.1.41</Version>
+    <Version>1.1.0</Version>
     <AllowUnsafeBlocks>true</AllowUnsafeBlocks>
     <LangVersion>latest</LangVersion>
     <RootNamespace>ScarletTeleports</RootNamespace>
-    <AssemblyVersion>0.1.41.0</AssemblyVersion>
-    <FileVersion>0.1.41.0</FileVersion>
+    <AssemblyVersion>1.1.0.0</AssemblyVersion>
+    <FileVersion>1.1.0.0</FileVersion>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="BepInEx.Unity.IL2CPP" Version="6.0.0-be.691" IncludeAssets="compile" />
@@ -16,7 +16,15 @@
     <PackageReference Include="BepInEx.PluginInfoProps" Version="2.*" />
     <PackageReference Include="VRising.Unhollowed.Client" Version="1.1.*" />
     <PackageReference Include="VRising.VampireCommandFramework" Version="0.9.*" />
+    <PackageReference Include="ScarletCore" Version="1.*" />
   </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="ScarletCore">
+      <HintPath>libs\ScarletCore.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
   <Target Name="PostBuild" AfterTargets="PostBuildEvent">
 		<Exec Command="copy &quot;$(TargetPath)&quot; &quot;C:\Program Files (x86)\Steam\steamapps\common\VRisingDedicatedServer\BepInEx\plugins&quot; " ContinueOnError="true" />
     <Exec Command="start &quot;VRising Server&quot; cmd /c &quot;cd /d &quot;C:\Program Files (x86)\Steam\steamapps\common\VRisingDedicatedServer&quot; &amp; START_SERVER.bat&quot;" />

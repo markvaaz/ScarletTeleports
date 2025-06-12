@@ -1,10 +1,11 @@
 {
   "name": "ScarletTeleports",
-  "version_number": "0.1.41",
+  "version_number": "1.1.0",
   "website_url": "https://github.com/markvaaz/ScarletTeleports",
   "description": "Adds a teleport system to V Rising servers. Create, manage, and use teleport points, request teleports, set costs, cooldowns, permissions, and restricted zones. All features via chat commands.",
   "dependencies": [
     "bbepis-BepInExPack-5.4.2117",
-    "deca-VampireCommandFramework-0.9.0"
+    "deca-VampireCommandFramework-0.10.3",
+    "ScarletMods-ScarletCore-1.0.0"
   ]
 }
