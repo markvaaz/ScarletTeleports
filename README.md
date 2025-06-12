@@ -232,7 +232,8 @@ For a full list of commands and usage, expand the **Show Commands**.
 This mod requires the following dependencies to function correctly:
 
 * **[BepInEx (RC2)](https://wiki.vrisingmods.com/user/bepinex_install.html)**
-* **[VampireCommandFramework](https://github.com/decaprime/VampireCommandFramework/releases/tag/v0.10.0)**
+* **[ScarletCore](https://thunderstore.io/c/v-rising/p/ScarletMods/ScarletCore/)**
+* **[VampireCommandFramework](https://thunderstore.io/c/v-rising/p/deca/VampireCommandFramework/)**
 
 Make sure both are installed and loaded **before** installing ScarletTeleports.
 
@@ -252,7 +253,7 @@ Make sure both are installed and loaded **before** installing ScarletTeleports.
    BepInEx/plugins/ScarletTeleports.dll
    ```
 
-3. Ensure **VampireCommandFramework** is also installed in the `plugins` folder.
+3. Ensure **ScarletCore** and **VampireCommandFramework** are also installed in the `plugins` folder.
 
 4. Start or restart your server.
 
