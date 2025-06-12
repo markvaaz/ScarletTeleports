@@ -323,3 +323,5 @@ All settings can be adjusted in the `ScarletTeleports.cfg` file located in your 
   *Default: 50*
 
 </details>
+
+## Join the [V Rising Mod Community on Discord](https://vrisingmods.com/discord)
