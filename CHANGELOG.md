@@ -1,6 +1,14 @@
 ## Updates
 
 <details>
+<summary>Update 1.1.1</summary>
+  
+- Refactored teleport data management
+- This update is needed for the latest ScarletCore version (to be released)
+</details>
+
+
+<details>
 <summary>Update 1.1.0</summary>
   
 - **Major Refactor**: Migrated most services and systems to use existing ScarletCore infrastructure.
