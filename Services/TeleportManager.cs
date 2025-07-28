@@ -18,17 +18,19 @@ public class TeleportManager {
   private static Database Database => Plugin.Database;
   public static HashSet<TeleportData> PersonalTeleports { get; private set; } = [];
   public static Dictionary<string, TeleportData> GlobalTeleports { get; private set; } = [];
+  public static Dictionary<ulong, PlayerTeleportData> PlayerTeleports { get; private set; } = [];
   public static Dictionary<string, ZoneData> RestrictedZones { get; private set; } = [];
-  public static void Initialize(object _, InitializeEventArgs args) {
+  public static void Initialize(object _, object __) {
+    EventManager.OnInitialize -= Initialize;
     LoadGlobalTeleports();
     LoadRestrictedZones();
-    CoroutineHandler.StartRepeatingCoroutine(CheckForExpiredRequests, 20);
+    ActionScheduler.Repeating(CheckForExpiredRequests, 20);
+    LoadPersonalTeleports();
     EventManager.OnUserConnected += LoadPersonalTeleportEvent;
   }
 
   public static void LoadPersonalTeleportEvent(object _, UserConnectedEventArgs args) {
     var playerData = args.Player;
-
     LoadPersonalTeleports(playerData);
   }
 
@@ -71,12 +73,12 @@ public class TeleportManager {
     SaveGlobalTeleports();
   }
 
-  public static CustomPlayerData GetCustomPlayerData(PlayerData player) {
-    var customData = player.GetData<CustomPlayerData>();
+  public static PlayerTeleportData GetCustomPlayerData(PlayerData player) {
+    var customData = PlayerTeleports.GetValueOrDefault(player.PlatformId);
 
     if (customData == null) {
-      customData = new CustomPlayerData();
-      player.SetData(customData);
+      customData = new PlayerTeleportData();
+      PlayerTeleports[player.PlatformId] = customData;
     }
 
     return customData;
@@ -103,7 +105,7 @@ public class TeleportManager {
   }
 
   public static void SavePersonalTeleport(PlayerData player) {
-    Database.Save($"PersonalTeleports/{player.PlatformId}", player.GetData<CustomPlayerData>());
+    Database.Save($"PersonalTeleports/{player.PlatformId}", GetCustomPlayerData(player));
   }
 
   public static TeleportData GetGlobalTeleport(string name) {
@@ -115,7 +117,7 @@ public class TeleportManager {
   }
 
   public static void LoadGlobalTeleports() {
-    var teleports = Database.Load<List<TeleportData>>("GlobalTeleports");
+    var teleports = Database.Load<List<TeleportData>>("GlobalTeleports") ?? [];
 
     if (teleports == null) return;
 
@@ -138,12 +140,18 @@ public class TeleportManager {
     SaveGlobalTeleports();
   }
 
+  public static void LoadPersonalTeleports() {
+    foreach (var player in PlayerService.AllPlayers) {
+      LoadPersonalTeleports(player);
+    }
+  }
+
   public static bool LoadPersonalTeleports(PlayerData player) {
     var customData = GetCustomPlayerData(player);
 
     customData.Teleports.Clear();
 
-    var data = Database.Load<CustomPlayerData>($"PersonalTeleports/{player.PlatformId}");
+    var data = Database.Load<PlayerTeleportData>($"PersonalTeleports/{player.PlatformId}");
 
     if (data == null) return false;
 
