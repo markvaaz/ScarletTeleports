@@ -4,14 +4,15 @@ using BepInEx.Unity.IL2CPP;
 using HarmonyLib;
 using ScarletCore.Data;
 using ScarletCore.Events;
+using ScarletCore.Systems;
 using ScarletTeleports.Services;
 using VampireCommandFramework;
 
 namespace ScarletTeleports;
 
 [BepInPlugin(MyPluginInfo.PLUGIN_GUID, MyPluginInfo.PLUGIN_NAME, MyPluginInfo.PLUGIN_VERSION)]
-[BepInDependency("gg.deca.VampireCommandFramework")]
 [BepInDependency("markvaaz.ScarletCore")]
+[BepInDependency("gg.deca.VampireCommandFramework")]
 public class Plugin : BasePlugin {
   static Harmony _harmony;
   public static Harmony Harmony => _harmony;
@@ -32,9 +33,13 @@ public class Plugin : BasePlugin {
     Settings = new Settings(MyPluginInfo.PLUGIN_GUID, Instance);
     Database = new Database(MyPluginInfo.PLUGIN_GUID);
 
-    EventManager.OnInitialize += TeleportManager.Initialize;
-
     LoadSettings();
+
+    if (GameSystems.Initialized) {
+      TeleportManager.Initialize(null, null);
+    } else {
+      EventManager.OnInitialize += TeleportManager.Initialize;
+    }
 
     CommandRegistry.RegisterAll();
   }
@@ -46,32 +51,28 @@ public class Plugin : BasePlugin {
   }
 
   public static void LoadSettings() {
-    var general = Settings.Section("General");
+    Settings.Section("General")
+      .Add("EnablePersonalTeleports", true, "If enabled, allows players to create personal teleports.")
+      .Add("EnablePersonalCooldown", true, "Enables cooldown for personal teleports.")
+      .Add("EnableGlobalCooldown", true, "Enables cooldown for global teleports.")
+      .Add("EnableDraculaRoom", false, "Enables teleporting from and to the Dracula's room.")
+      .Add("EnableTeleportInCombat", false, "Enables teleporting while in combat globally.")
+      .Add("EnableTeleportBetweenPlayers", true, "Enables teleporting between players.")
+      .Add("DefaultMaximumPersonalTeleports", 3, "The maximum number of personal teleports a player can have.");
 
-    general.Add("EnablePersonalTeleports", true, "If enabled, allows players to create personal teleports.");
-    general.Add("EnablePersonalCooldown", true, "Enables cooldown for personal teleports.");
-    general.Add("EnableGlobalCooldown", true, "Enables cooldown for global teleports.");
-    general.Add("EnableDraculaRoom", false, "Enables teleporting from and to the Dracula's room.");
-    general.Add("EnableTeleportInCombat", false, "Enables teleporting while in combat globally.");
-    general.Add("EnableTeleportBetweenPlayers", true, "Enables teleporting between players.");
-    general.Add("DefaultMaximumPersonalTeleports", 3, "The maximum number of personal teleports a player can have.");
+    Settings.Section("Timers")
+      .Add("TeleportRequestExpiration", 30, "The expiration time in seconds of a teleport request.")
+      .Add("DefaultPersonalCooldown", 30, "The cooldown in seconds for personal teleports.")
+      .Add("DefaultGlobalCooldown", 30, "The cooldown in seconds for global teleports.");
 
-    var timers = Settings.Section("Timers");
+    Settings.Section("Prefabs")
+      .Add("DefaultPersonalPrefabName", "Blood Essence", "The name of the prefab that will be consumed when teleporting to a personal teleport.")
+      .Add("DefaultPersonalPrefabGUID", 862477668, "The prefab that will be consumed when teleporting to a personal teleport.")
+      .Add("DefaultGlobalPrefabGUID", 862477668, "The prefab that will be consumed when teleporting to a global teleport.")
+      .Add("DefaultGlobalPrefabName", "Blood Essence", "The name of the prefab that will be consumed when teleporting to a global teleport.");
 
-    timers.Add("TeleportRequestExpiration", 30, "The expiration time in seconds of a teleport request.");
-    timers.Add("DefaultPersonalCooldown", 30, "The cooldown in seconds for personal teleports.");
-    timers.Add("DefaultGlobalCooldown", 30, "The cooldown in seconds for global teleports.");
-
-    var prefabs = Settings.Section("Prefabs");
-
-    prefabs.Add("DefaultPersonalPrefabName", "Blood Essence", "The name of the prefab that will be consumed when teleporting to a personal teleport.");
-    prefabs.Add("DefaultPersonalPrefabGUID", 862477668, "The prefab that will be consumed when teleporting to a personal teleport.");
-    prefabs.Add("DefaultGlobalPrefabGUID", 862477668, "The prefab that will be consumed when teleporting to a global teleport.");
-    prefabs.Add("DefaultGlobalPrefabName", "Blood Essence", "The name of the prefab that will be consumed when teleporting to a global teleport.");
-
-    var costs = Settings.Section("Costs");
-
-    costs.Add("DefaultPersonalCost", 100, "The amount of the prefab that will be consumed when teleporting to a personal teleport.");
-    costs.Add("DefaultGlobalCost", 50, "The amount of the prefab that will be consumed when teleporting to a global teleport.");
+    Settings.Section("Costs")
+      .Add("DefaultPersonalCost", 100, "The amount of the prefab that will be consumed when teleporting to a personal teleport.")
+      .Add("DefaultGlobalCost", 50, "The amount of the prefab that will be consumed when teleporting to a global teleport.");
   }
 }
