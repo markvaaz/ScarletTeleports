@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace ScarletTeleports.Data;
 
-public class CustomPlayerData {
+public class PlayerTeleportData {
   public int MaxTeleports { get; set; } = Plugin.Settings.Get<int>("DefaultMaximumPersonalTeleports");
   public bool BypassCost { get; set; } = false;
   public bool BypassCooldown { get; set; } = false;
