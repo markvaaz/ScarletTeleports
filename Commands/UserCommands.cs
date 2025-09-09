@@ -241,7 +241,7 @@ public static class UserCommands {
     var cost = Settings.Get<int>("DefaultGlobalCost");
 
     // Check if the target player has enough items
-    if (!playerTarget.IsAdmin && !InventoryService.HasAmount(player.CharacterEntity, prefabGUID, cost)) {
+    if (!playerTarget.IsAdmin && !InventoryService.HasAmount(playerTarget.CharacterEntity, prefabGUID, cost)) {
       MessageService.Send(playerTarget.UserEntity.Read<User>(), $"You do not have enough ~{Settings.Get<string>("DefaultGlobalPrefabName")}~ to teleport to ~{playerName}~.".FormatError());
       return;
     }
