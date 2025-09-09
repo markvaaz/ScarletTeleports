@@ -1,6 +1,13 @@
 ## Updates
 
 <details>
+<summary>Update 1.1.2</summary>
+  
+- Fixed an issue where the player-to-player teleport incorrectly charged the target of the teleport 
+</details>
+
+
+<details>
 <summary>Update 1.1.1</summary>
   
 - Refactored teleport data management
