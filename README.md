@@ -15,6 +15,9 @@ ScarletTeleports adds a complete teleport system to V Rising servers. Players an
 - **Personal Teleports:**  
   Players can set, list, use, and remove their own teleport points, with configurable limits and cooldowns.
 
+- **Waypoint Teleportation:**  
+  Players can access the game's native waypoint system through chat commands. Consumes resources but has no cooldown, following the same restrictions as regular teleports.
+
 - **Global Teleports:**  
   Admins can create teleport points accessible to all players, with full control over location, cost, cooldown, and name.
 
@@ -190,6 +193,10 @@ For a full list of commands and usage, expand the **Show Commands**.
 - `.stp teleport` | `.stp tp`
   - **Usage:** `.stp teleport <name>`
   - **Description:** Teleport to a personal or global teleport by name. Respects combat, Dracula's room, and restricted zone limitations, except for admins or players with bypass permissions.
+
+- `.stp waypoint` | `.stp wp`
+  - **Usage:** `.stp waypoint`
+  - **Description:** Open the game's native waypoint teleportation menu. Consumes resources but has no cooldown. Respects the same restrictions as regular teleports (combat, Dracula's room, restricted zones) but doesn't check destination restrictions since waypoints are handled by the game.
 
 ### Listing
 

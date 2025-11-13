@@ -18,7 +18,7 @@ public static class AdminCommands {
   [Command("goto", usage: "<x> <y> <z>", adminOnly: true)]
   public static void GotoTeleport(ChatCommandContext ctx, int x, int y, int z) {
     if (!TryGetPlayerById(ctx, out var player)) return;
-    TeleportService.TeleportToPosition(player.CharacterEntity, new float3(x, y, z));
+    TeleportService.Teleport(player.CharacterEntity, new float3(x, y, z));
 
     ctx.Reply($"Teleported you to ~({x}, {y}, {z})~.".Format());
   }
@@ -27,7 +27,7 @@ public static class AdminCommands {
   public static void GotoTeleport(ChatCommandContext ctx, string playerName) {
     if (!TryGetPlayerById(ctx, out var player)) return;
     if (!TryGetPlayerByName(ctx, playerName, out var playerTarget)) return;
-    TeleportService.TeleportToPosition(player.CharacterEntity, playerTarget.CharacterEntity.GetPosition());
+    TeleportService.Teleport(player.CharacterEntity, playerTarget.CharacterEntity.GetPosition());
 
     ctx.Reply($"Teleported you to ~{playerName}~.".Format());
   }
@@ -39,7 +39,7 @@ public static class AdminCommands {
 
     foreach (var playerTarget in players) {
       if (!playerTarget.IsOnline) continue;
-      TeleportService.TeleportToPosition(playerTarget.CharacterEntity, player.CharacterEntity.GetPosition());
+      TeleportService.Teleport(playerTarget.CharacterEntity, player.CharacterEntity.GetPosition());
     }
 
     ctx.Reply($"Teleported ~All~ players to you.".Format());
@@ -49,7 +49,7 @@ public static class AdminCommands {
   public static void SummonPlayer(ChatCommandContext ctx, string playerName) {
     if (!TryGetPlayerById(ctx, out var player)) return;
     if (!TryGetPlayerByName(ctx, playerName, out var playerTarget)) return;
-    TeleportService.TeleportToPosition(playerTarget.CharacterEntity, player.CharacterEntity.GetPosition());
+    TeleportService.Teleport(playerTarget.CharacterEntity, player.CharacterEntity.GetPosition());
 
     ctx.Reply($"Teleported ~{playerName}~ to you.".Format());
   }

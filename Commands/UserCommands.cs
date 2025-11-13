@@ -21,6 +21,7 @@ public static class Constants {
 public static class UserCommands {
   private static Settings Settings => Plugin.Settings;
   private static readonly string Prefix = Constants.Prefix;
+  private static readonly PrefabGUID TeleportAbility = new(893332545);
 
   [Command("setteleport", usage: "<teleport-name>", shortHand: "stp")]
   public static void SetTeleport(ChatCommandContext ctx, string teleportName) {
@@ -129,7 +130,7 @@ public static class UserCommands {
 
     playerCD.LastTeleportTime = DateTime.Now;
 
-    TeleportService.TeleportToPosition(player.CharacterEntity, teleport.Position);
+    TeleportService.Teleport(player.CharacterEntity, teleport.Position);
 
     if (!playerCD.BypassCost) {
       InventoryService.RemoveItem(player.CharacterEntity, teleport.PrefabGUID, teleport.Cost);
@@ -278,7 +279,7 @@ public static class UserCommands {
 
     var position = player.CharacterEntity.GetPosition();
 
-    TeleportService.TeleportToPosition(playerTarget.CharacterEntity, position);
+    TeleportService.Teleport(playerTarget.CharacterEntity, position);
 
     playerTargetCD.CanResquestTeleports = true;
 
@@ -310,6 +311,52 @@ public static class UserCommands {
 
     ctx.Reply($"Player ~{playerName}~ has been denied your teleport request.".Format());
     MessageService.Send(playerTarget.UserEntity.Read<User>(), $"Your teleport request to ~{player.Name}~ was denied.".Format());
+  }
+
+  [Command("waypoint", shortHand: "wp")]
+  public static void Waypoint(ChatCommandContext ctx) {
+    if (!Settings.Get<bool>("EnableWaypoints")) {
+      ctx.Reply($"Waypoint teleportation is disabled.".FormatError());
+      return;
+    }
+
+    if (!TryGetPlayerById(ctx, out var player)) return;
+
+    var playerCD = TeleportManager.GetCustomPlayerData(player);
+
+    if (!player.IsAdmin && !Settings.Get<bool>("EnableTeleportInCombat") && !playerCD.BypassCombat && TeleportManager.IsPlayerInCombat(player.CharacterEntity)) {
+      ctx.Reply($"You cannot open waypoint menu while in combat.".FormatError());
+      return;
+    }
+
+    if (!player.IsAdmin && !Settings.Get<bool>("EnableDraculaRoom") && !playerCD.BypassDraculaRoom && TeleportManager.IsInDraculaRoom(player.CharacterEntity)) {
+      ctx.Reply($"You cannot open waypoint menu while in the ~Dracula~'s room.".FormatError());
+      return;
+    }
+
+    var fromZone = TeleportManager.GetRestrictedZone(player.CharacterEntity.GetPosition());
+
+    if (!player.IsAdmin && fromZone != null && !fromZone.CanTeleportFrom && !playerCD.BypassRestrictedZones) {
+      ctx.Reply($"You cannot open waypoint menu while in a restricted zone.".FormatError());
+      return;
+    }
+
+    var prefabName = Settings.Get<string>("DefaultWaypointPrefabName");
+    var prefabGUID = new PrefabGUID(Settings.Get<int>("DefaultWaypointPrefabGUID"));
+    var cost = Settings.Get<int>("DefaultWaypointCost");
+
+    if (!player.IsAdmin && !playerCD.BypassCost && !InventoryService.HasAmount(player.CharacterEntity, prefabGUID, cost)) {
+      ctx.Reply($"You do not have enough ~{prefabName}~ to open waypoint menu.".FormatError());
+      return;
+    }
+
+    if (!playerCD.BypassCost) {
+      InventoryService.RemoveItem(player.CharacterEntity, prefabGUID, cost);
+    }
+
+    AbilityService.CastAbility(player.CharacterEntity, TeleportAbility);
+
+    ctx.Reply($"Waypoint menu opened successfully.".Format());
   }
 
   public static bool TryGetPlayerById(ChatCommandContext ctx, out PlayerData player) {

@@ -1,6 +1,19 @@
 ## Updates
 
 <details>
+<summary>Update 1.2.0</summary>
+  
+- **New Feature**: Added waypoint teleportation command (`waypoint` / `wp`)
+- Players can now open the game's native waypoint menu using the teleport system
+- Waypoint teleports follow the same restrictions as regular teleports (combat, Dracula's room, restricted zones)
+- No cooldown for waypoint teleports, but still consumes resources
+- Added new configuration options:
+  - `EnableWaypoints`: Toggle waypoint teleportation on/off
+  - `DefaultWaypointCost`: Cost in resources to open waypoint menu (default: 75)
+  - `DefaultWaypointPrefabGUID` and `DefaultWaypointPrefabName`: Configurable resource type
+</details>
+
+<details>
 <summary>Update 1.1.2</summary>
   
 - Fixed an issue where the player-to-player teleport incorrectly charged the target of the teleport 

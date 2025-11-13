@@ -35,11 +35,7 @@ public class Plugin : BasePlugin {
 
     LoadSettings();
 
-    if (GameSystems.Initialized) {
-      TeleportManager.Initialize(null, null);
-    } else {
-      EventManager.OnInitialize += TeleportManager.Initialize;
-    }
+    GameSystems.OnInitialize(TeleportManager.Initialize);
 
     CommandRegistry.RegisterAll();
   }
@@ -58,6 +54,7 @@ public class Plugin : BasePlugin {
       .Add("EnableDraculaRoom", false, "Enables teleporting from and to the Dracula's room.")
       .Add("EnableTeleportInCombat", false, "Enables teleporting while in combat globally.")
       .Add("EnableTeleportBetweenPlayers", true, "Enables teleporting between players.")
+      .Add("EnableWaypoints", true, "Enables waypoint teleportation using game's built-in waypoint system.")
       .Add("DefaultMaximumPersonalTeleports", 3, "The maximum number of personal teleports a player can have.");
 
     Settings.Section("Timers")
@@ -69,10 +66,13 @@ public class Plugin : BasePlugin {
       .Add("DefaultPersonalPrefabName", "Blood Essence", "The name of the prefab that will be consumed when teleporting to a personal teleport.")
       .Add("DefaultPersonalPrefabGUID", 862477668, "The prefab that will be consumed when teleporting to a personal teleport.")
       .Add("DefaultGlobalPrefabGUID", 862477668, "The prefab that will be consumed when teleporting to a global teleport.")
-      .Add("DefaultGlobalPrefabName", "Blood Essence", "The name of the prefab that will be consumed when teleporting to a global teleport.");
+      .Add("DefaultGlobalPrefabName", "Blood Essence", "The name of the prefab that will be consumed when teleporting to a global teleport.")
+      .Add("DefaultWaypointPrefabGUID", 862477668, "The prefab that will be consumed when opening waypoint menu.")
+      .Add("DefaultWaypointPrefabName", "Blood Essence", "The name of the prefab that will be consumed when opening waypoint menu.");
 
     Settings.Section("Costs")
       .Add("DefaultPersonalCost", 100, "The amount of the prefab that will be consumed when teleporting to a personal teleport.")
-      .Add("DefaultGlobalCost", 50, "The amount of the prefab that will be consumed when teleporting to a global teleport.");
+      .Add("DefaultGlobalCost", 50, "The amount of the prefab that will be consumed when teleporting to a global teleport.")
+      .Add("DefaultWaypointCost", 75, "The amount of the prefab that will be consumed when opening waypoint menu.");
   }
 }

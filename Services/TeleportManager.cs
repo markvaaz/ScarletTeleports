@@ -20,17 +20,15 @@ public class TeleportManager {
   public static Dictionary<string, TeleportData> GlobalTeleports { get; private set; } = [];
   public static Dictionary<ulong, PlayerTeleportData> PlayerTeleports { get; private set; } = [];
   public static Dictionary<string, ZoneData> RestrictedZones { get; private set; } = [];
-  public static void Initialize(object _, object __) {
-    EventManager.OnInitialize -= Initialize;
+  public static void Initialize() {
     LoadGlobalTeleports();
     LoadRestrictedZones();
     ActionScheduler.Repeating(CheckForExpiredRequests, 20);
     LoadPersonalTeleports();
-    EventManager.OnUserConnected += LoadPersonalTeleportEvent;
+    EventManager.On(PlayerEvents.PlayerJoined, LoadPersonalTeleportEvent);
   }
 
-  public static void LoadPersonalTeleportEvent(object _, UserConnectedEventArgs args) {
-    var playerData = args.Player;
+  public static void LoadPersonalTeleportEvent(PlayerData playerData) {
     LoadPersonalTeleports(playerData);
   }
 
